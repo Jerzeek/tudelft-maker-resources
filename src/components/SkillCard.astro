@@ -1,0 +1,22 @@
+---
+import Icon from './Icon.astro';
+import { getData, entryUrl, type Skill } from '../lib/data';
+
+interface Props { skill: Skill }
+const { skill } = Astro.props;
+const data = await getData();
+const count = (n: number, one: string, many: string) => (n ? `${n} ${n === 1 ? one : many}` : null);
+const sub = [
+  count(data.spacesForSkill(skill.id).length, 'place', 'places'),
+  count(data.equipmentForSkill(skill.id).length, 'machine', 'machines'),
+  count(data.peopleWithSkill(skill.id).length, 'person', 'people'),
+].filter(Boolean).join(' · ');
+---
+
+<article class="card rowcard t-skills">
+  <div class="thumb"><Icon name={skill.data.icon} size={26} /></div>
+  <div class="text">
+    <h3><a href={entryUrl(skill)}>{skill.data.title}</a></h3>
+    <span class="sub">{sub || 'Nothing listed yet'}</span>
+  </div>
+</article>

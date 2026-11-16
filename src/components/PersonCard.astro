@@ -1,0 +1,31 @@
+---
+import { Image } from 'astro:assets';
+import { getData, entryUrl, initials, type Person } from '../lib/data';
+import { ROLES } from '../forms/vocab.mjs';
+
+interface Props { person: Person; chips?: boolean }
+const { person, chips = false } = Astro.props;
+const d = person.data;
+const data = await getData();
+const spaces = data.spacesOfPerson(person.id);
+const skills = data.pick(data.index.skills, d.skills);
+const sub = [ROLES[d.role], ...spaces.map((s) => s.data.title)].join(' · ');
+---
+
+<article class="card rowcard t-people">
+  <div class="thumb avatar">
+    {d.image ? <Image src={d.image} alt="" width={112} height={112} fit="cover" loading="lazy" /> : initials(d.title)}
+  </div>
+  <div class="text">
+    <h3><a href={entryUrl(person)}>{d.title}</a></h3>
+    <span class="sub">{sub}</span>
+    {
+      chips && skills.length > 0 && (
+        <ul class="chips">
+          {skills.slice(0, 3).map((s) => <li class="chip chip-skills">{s.data.title}</li>)}
+          {skills.length > 3 && <li class="chip">+{skills.length - 3}</li>}
+        </ul>
+      )
+    }
+  </div>
+</article>

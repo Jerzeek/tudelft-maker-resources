@@ -1,0 +1,34 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { getData, entryUrl, type Equipment } from '../lib/data';
+import { TRAINING } from '../forms/vocab.mjs';
+
+interface Props { item: Equipment; showSpace?: boolean }
+const { item, showSpace = true } = Astro.props;
+const d = item.data;
+const data = await getData();
+const space = data.index.spaces.get(d.space.id)!;
+const skills = data.pick(data.index.skills, d.skills);
+const sub = [d.model, showSpace ? space.data.title : null].filter(Boolean).join(' · ');
+---
+
+<article class="card rowcard t-equipment">
+  <div class="thumb">
+    {
+      d.image ? (
+        <Image src={d.image} alt="" width={112} height={112} fit="cover" loading="lazy" />
+      ) : (
+        <Icon name={skills[0]?.data.icon ?? 'equipment'} size={26} />
+      )
+    }
+  </div>
+  <div class="text">
+    <h3><a href={entryUrl(item)}>{d.title}</a>{d.quantity && d.quantity > 1 && <span class="muted small"> ×{d.quantity}</span>}</h3>
+    {sub && <span class="sub">{sub}</span>}
+    <ul class="chips">
+      {skills.slice(0, 2).map((s) => <li class="chip chip-skills">{s.data.title}</li>)}
+      {d.training && d.training !== 'none' && <li class="chip chip-warn">{TRAINING[d.training]}</li>}
+    </ul>
+  </div>
+</article>

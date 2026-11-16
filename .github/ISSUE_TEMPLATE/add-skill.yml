@@ -1,0 +1,35 @@
+# This file is generated from src/forms/definitions.mjs.
+# Do not edit it by hand: change the definitions and run `npm run forms`.
+name: Add a skill
+description: A technique people can learn, such as welding or screen printing.
+title: "Add skill: "
+labels:
+  - submission
+  - skill
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for helping! Fill in what you know — only the fields marked with a red star are required. After you submit, a draft page is prepared automatically and a maintainer checks it before it goes live.
+  - type: input
+    id: name
+    attributes:
+      label: Name of the skill
+      placeholder: e.g. Screen printing
+    validations:
+      required: true
+  - type: input
+    id: summary
+    attributes:
+      label: What is it, in one or two sentences?
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else worth knowing
+      description: How to get started, where to learn it, good tutorials, communities to join…
+  - type: input
+    id: submitter
+    attributes:
+      label: Your name or e-mail (optional)
+      description: Only used if we have a question about your submission. It is visible to others on GitHub, so leave it empty if you prefer.

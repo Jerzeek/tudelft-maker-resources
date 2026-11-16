@@ -1,0 +1,114 @@
+---
+// The frame around every page: <head>, header with navigation, footer.
+import '../styles/global.css';
+import site from '../../site.config.mjs';
+import Icon from '../components/Icon.astro';
+import { url } from '../lib/data';
+import { COLLECTIONS } from '../forms/vocab.mjs';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Which section is active: spaces | equipment | skills | people | projects */
+  section?: string;
+  image?: string;
+}
+const { title, description = site.tagline, section, image } = Astro.props;
+const fullTitle = title ? `${title} · ${site.name}` : `${site.name} — ${site.tagline}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const nav = Object.entries(COLLECTIONS).map(([key, c]) => ({ key, label: c.plural, href: url(`/${c.path}/`) }));
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+    <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)" />
+    {!site.indexable && <meta name="robots" content="noindex" />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title ?? site.name} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {image && <meta property="og:image" content={new URL(image, Astro.site)} />}
+    <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+  </head>
+  <body class={section ? `t-${section}` : undefined}>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href={url('/')}>
+          <span class="brand-mark"><Icon name="tools" size={19} /></span>
+          <span>{site.name}<small>TU Delft · pilot</small></span>
+        </a>
+        <nav class="nav" aria-label="Main">
+          {
+            nav.map((item) => (
+              <a href={item.href} aria-current={section === item.key ? 'page' : undefined}>
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+        <div class="header-actions">
+          <form class="header-search" action={url('/search/')} role="search">
+            <label class="sr-only" for="header-q">Search the site</label>
+            <Icon name="search" size={16} />
+            <input id="header-q" type="search" name="q" placeholder="Search…" autocomplete="off" />
+          </form>
+          <a class="btn btn-quiet btn-sm search-link" href={url('/search/')} aria-label="Search"><Icon name="search" size={16} /></a>
+          <a class="btn btn-primary btn-sm" href={url('/contribute/')}>
+            <Icon name="plus" size={16} /> Add
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <div>
+          <h2>{site.name}</h2>
+          <p>
+            An open, community-maintained guide to making at TU Delft, started as a pilot at the {site.organisation}.
+            Not an official TU Delft service — always check with the workshop staff before you travel.
+          </p>
+          <p>
+            Text is free to reuse under
+            <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; photos belong to their credited makers.
+          </p>
+        </div>
+        <div>
+          <h2>Explore</h2>
+          <ul>
+            {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+            <li><a href={url('/search/')}>Search</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Take part</h2>
+          <ul>
+            <li><a href={url('/contribute/')}>Add or correct something</a></li>
+            <li><a href={url('/about/')}>About this project</a></li>
+            <li><a href={url('/links/')}>More resources</a></li>
+            <li><a href={`https://github.com/${site.repo}`}>Source on GitHub</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="wrap" style="display:block;margin-top:20px">
+        <span class="small">© {year} the contributors.</span>
+      </div>
+    </footer>
+  </body>
+</html>

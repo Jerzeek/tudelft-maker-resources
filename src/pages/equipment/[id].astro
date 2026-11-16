@@ -1,0 +1,83 @@
+---
+import Entry from '../../layouts/Entry.astro';
+import Fact from '../../components/Fact.astro';
+import Icon from '../../components/Icon.astro';
+import EquipmentCard from '../../components/EquipmentCard.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { getData, entryUrl, type Equipment } from '../../lib/data';
+import { TRAINING } from '../../forms/vocab.mjs';
+
+export async function getStaticPaths() {
+  const data = await getData();
+  return data.equipment.map((item) => ({ params: { id: item.id }, props: { item } }));
+}
+interface Props { item: Equipment }
+const { item } = Astro.props;
+const d = item.data;
+const data = await getData();
+const space = data.index.spaces.get(d.space.id)!;
+const skills = data.pick(data.index.skills, d.skills);
+const contacts = data.contactsOfEquipment(item);
+const projects = data.projectsUsingEquipment(item.id);
+const neighbours = data.equipmentIn(space.id).filter((e) => e.id !== item.id);
+const loc = space.data.location;
+---
+
+<Entry entry={item} tag={d.model ? `Equipment · ${d.model}` : 'Equipment'}>
+  <ul class="chips" slot="chips" style="margin-top:14px">
+    {skills.map((s) => <li><a class="chip chip-skills chip-lg" href={entryUrl(s)}><Icon name={s.data.icon} size={15} /> {s.data.title}</a></li>)}
+  </ul>
+
+  <Fragment slot="facts">
+    <Fact icon="map-pin" label="Where">
+      <p><a href={entryUrl(space)}>{space.data.title}</a></p>
+      {(loc.building || loc.room) && <p class="note">{[loc.building, loc.room].filter(Boolean).join(', ')}</p>}
+    </Fact>
+    {d.quantity && <Fact icon="equipment" label="How many">{d.quantity}</Fact>}
+    {
+      (d.training || d.trainingNotes) && (
+        <Fact icon="skills" label="Before you use it">
+          {d.training && <p>{TRAINING[d.training]}</p>}
+          {d.trainingNotes && <p class="note">{d.trainingNotes}</p>}
+        </Fact>
+      )
+    }
+    {
+      (d.booking || d.bookingUrl) && (
+        <Fact icon="calendar-check" label="Reserve">
+          {d.booking && <p>{d.booking}</p>}
+          {d.bookingUrl && <a href={d.bookingUrl}>Booking page</a>}
+        </Fact>
+      )
+    }
+    {
+      contacts.length > 0 && (
+        <Fact icon="people" label="Ask">
+          <ul>{contacts.map((p) => <li><a href={entryUrl(p)}>{p.data.title}</a></li>)}</ul>
+        </Fact>
+      )
+    }
+  </Fragment>
+
+  <a slot="actions" class="btn btn-dark" href={entryUrl(space)}>About {space.data.title} <Icon name="arrow-right" size={16} /></a>
+
+  <Fragment slot="related">
+    {
+      projects.length > 0 && (
+        <section class="related t-projects">
+          <h2>Made with this <span class="n">{projects.length}</span></h2>
+          <ul class="grid grid-lg">{projects.map((p) => <li><ProjectCard project={p} /></li>)}</ul>
+        </section>
+      )
+    }
+    {
+      neighbours.length > 0 && (
+        <section class="related t-equipment">
+          <h2>Also at {space.data.title} <span class="n">{neighbours.length}</span></h2>
+          <ul class="grid">{neighbours.slice(0, 9).map((m) => <li><EquipmentCard item={m} showSpace={false} /></li>)}</ul>
+          {neighbours.length > 9 && <p class="small" style="margin-top:12px"><a href={entryUrl(space)}>See all {neighbours.length + 1} machines at {space.data.title}</a></p>}
+        </section>
+      )
+    }
+  </Fragment>
+</Entry>

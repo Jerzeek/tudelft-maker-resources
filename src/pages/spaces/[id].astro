@@ -1,0 +1,90 @@
+---
+import Entry from '../../layouts/Entry.astro';
+import Fact from '../../components/Fact.astro';
+import Icon from '../../components/Icon.astro';
+import EquipmentCard from '../../components/EquipmentCard.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { getData, entryUrl, url, type Space } from '../../lib/data';
+import { ACCESS, AREAS, SPACE_KINDS } from '../../forms/vocab.mjs';
+
+export async function getStaticPaths() {
+  const data = await getData();
+  return data.spaces.map((space) => ({ params: { id: space.id }, props: { space } }));
+}
+interface Props { space: Space }
+const { space } = Astro.props;
+const d = space.data;
+const data = await getData();
+const machines = data.equipmentIn(space.id);
+const skills = data.skillsOfSpace(space);
+const contacts = data.pick(data.index.people, d.contacts);
+const projects = data.projectsInSpace(space.id);
+const loc = d.location;
+const hasPlace = loc.building || loc.room || loc.address;
+const mapUrl =
+  loc.lat !== undefined && loc.lng !== undefined
+    ? `https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=18/${loc.lat}/${loc.lng}`
+    : loc.address
+      ? `https://www.openstreetmap.org/search?query=${encodeURIComponent(loc.address)}`
+      : null;
+---
+
+<Entry entry={space} tag={`${SPACE_KINDS[d.kind]} · ${AREAS[d.area]}`}>
+  <ul class="chips" slot="chips" style="margin-top:14px">
+    {skills.map((s) => <li><a class="chip chip-skills chip-lg" href={entryUrl(s)}><Icon name={s.data.icon} size={15} /> {s.data.title}</a></li>)}
+  </ul>
+
+  <Fragment slot="facts">
+    {
+      hasPlace && (
+        <Fact icon="map-pin" label="Where">
+          {loc.building && <p>{loc.building}{loc.room && <>, {loc.room}</>}</p>}
+          {!loc.building && loc.room && <p>{loc.room}</p>}
+          {loc.address && <p class="note">{loc.address}</p>}
+          {mapUrl && <a class="small" href={mapUrl}>Show on map</a>}
+        </Fact>
+      )
+    }
+    {d.hours && <Fact icon="clock" label="Open">{d.hours}</Fact>}
+    {
+      (d.access || d.accessNotes) && (
+        <Fact icon="key" label="Who can use it">
+          {d.access && <p>{ACCESS[d.access]}</p>}
+          {d.accessNotes && <p class="note">{d.accessNotes}</p>}
+        </Fact>
+      )
+    }
+    {d.organisation && <Fact icon="spaces" label="Run by">{d.organisation}</Fact>}
+    {
+      contacts.length > 0 && (
+        <Fact icon="people" label="Ask">
+          <ul>{contacts.map((p) => <li><a href={entryUrl(p)}>{p.data.title}</a></li>)}</ul>
+        </Fact>
+      )
+    }
+  </Fragment>
+
+  {d.website && <a slot="actions" class="btn btn-dark" href={d.website}>Official website <Icon name="arrow-up-right" size={16} /></a>}
+
+  <Fragment slot="related">
+    <section class="related t-equipment">
+      <h2>Equipment here <span class="n">{machines.length}</span></h2>
+      {
+        machines.length > 0 ? (
+          <ul class="grid">{machines.map((m) => <li><EquipmentCard item={m} showSpace={false} /></li>)}</ul>
+        ) : (
+          <p class="muted">No machines listed yet. <a href={url(`/contribute/?type=equipment&space=${encodeURIComponent(d.title)}`)}>Add one</a>.</p>
+        )
+      }
+      {machines.length > 0 && <p class="small" style="margin-top:12px"><a href={url(`/contribute/?type=equipment&space=${encodeURIComponent(d.title)}`)}>+ Add a machine that stands here</a></p>}
+    </section>
+    {
+      projects.length > 0 && (
+        <section class="related t-projects">
+          <h2>Made here <span class="n">{projects.length}</span></h2>
+          <ul class="grid grid-lg">{projects.map((p) => <li><ProjectCard project={p} /></li>)}</ul>
+        </section>
+      )
+    }
+  </Fragment>
+</Entry>

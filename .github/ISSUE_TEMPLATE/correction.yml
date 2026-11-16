@@ -1,0 +1,34 @@
+# This file is generated from src/forms/definitions.mjs.
+# Do not edit it by hand: change the definitions and run `npm run forms`.
+name: Report a mistake or outdated information
+description: Something on the site is wrong, missing or out of date.
+title: "Correction: "
+labels:
+  - correction
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for helping! A maintainer will look at your report and update the page.
+  - type: input
+    id: name
+    attributes:
+      label: Which page is it about?
+      placeholder: e.g. IDE PMB
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or missing?
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: What should it say instead?
+      description: If you know. A link to a source helps a lot.
+  - type: input
+    id: submitter
+    attributes:
+      label: Your name or e-mail (optional)
+      description: Only used if we have a question about your submission. It is visible to others on GitHub, so leave it empty if you prefer.

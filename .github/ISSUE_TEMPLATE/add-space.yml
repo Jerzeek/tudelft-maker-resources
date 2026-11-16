@@ -1,0 +1,111 @@
+# This file is generated from src/forms/definitions.mjs.
+# Do not edit it by hand: change the definitions and run `npm run forms`.
+name: Add a makerspace, workshop or lab
+description: A workshop, lab, studio, shop or course location where people can make things.
+title: "Add makerspace: "
+labels:
+  - submission
+  - space
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for helping! Fill in what you know — only the fields marked with a red star are required. After you submit, a draft page is prepared automatically and a maintainer checks it before it goes live.
+  - type: input
+    id: name
+    attributes:
+      label: Name of the place
+      placeholder: e.g. Aerospace student workshop
+    validations:
+      required: true
+  - type: input
+    id: summary
+    attributes:
+      label: What is it, in one or two sentences?
+      description: Shown on the overview cards. Aim for under 200 characters.
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of place is it?
+      options:
+        - Workshop
+        - Makerspace
+        - Lab
+        - Open studio
+        - Materials & supplies
+        - Courses
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where is it?
+      options:
+        - TU Delft campus
+        - Delft (off campus)
+        - Rotterdam
+        - Elsewhere
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Building, room and address
+      placeholder: e.g. Faculty of IDE, room B-2-100, Landbergstraat 15, Delft
+  - type: input
+    id: organisation
+    attributes:
+      label: Who runs it?
+      placeholder: e.g. Faculty of Aerospace Engineering
+  - type: dropdown
+    id: access
+    attributes:
+      label: Who can use it?
+      options:
+        - Open to everyone
+        - All TU Delft students & staff
+        - Own faculty only
+        - By arrangement
+        - Membership or course fee
+  - type: textarea
+    id: access-notes
+    attributes:
+      label: How do you get in?
+      description: Training, registration, costs, house rules — whatever a first-time visitor needs to know.
+  - type: input
+    id: hours
+    attributes:
+      label: Opening hours
+      placeholder: e.g. Mon–Fri 8:30–17:00
+  - type: input
+    id: website
+    attributes:
+      label: Website
+      placeholder: https://
+  - type: input
+    id: skills
+    attributes:
+      label: What can you do there?
+      description: "Separate several with commas, for example: 3D printing, Electronics"
+  - type: input
+    id: contacts
+    attributes:
+      label: Who can people ask?
+      description: Names of staff or volunteers. Please only name people who are happy to be listed.
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else worth knowing
+      description: Facilities, tips for newcomers, things people often get wrong…
+  - type: textarea
+    id: photo
+    attributes:
+      label: Photo
+      description: Drag one photo that you made yourself (or may share) into this box. Avoid recognisable people unless they agree.
+      placeholder: Drag a photo here.
+  - type: input
+    id: submitter
+    attributes:
+      label: Your name or e-mail (optional)
+      description: Only used if we have a question about your submission. It is visible to others on GitHub, so leave it empty if you prefer.

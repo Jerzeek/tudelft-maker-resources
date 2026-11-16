@@ -1,0 +1,89 @@
+---
+import Base from '../../layouts/Base.astro';
+import SpaceCard from '../../components/SpaceCard.astro';
+import Filters from '../../components/Filters.astro';
+import Empty from '../../components/Empty.astro';
+import site from '../../../site.config.mjs';
+import { getData, entryUrl } from '../../lib/data';
+import { AREAS, SPACE_KINDS } from '../../forms/vocab.mjs';
+
+const data = await getData();
+const used = <T extends string>(all: Record<T, string>, values: string[]) =>
+  (Object.entries(all) as [T, string][]).filter(([k]) => values.includes(k)).map(([value, label]) => ({ value, label }));
+const skillOptions = data.skills
+  .filter((s) => data.spacesForSkill(s.id).length)
+  .map((s) => ({ value: s.id, label: s.data.title }));
+
+// Places with coordinates go on the map. Places at the same spot share a pin.
+const pins = new Map<string, { lat: number; lng: number; places: { id: string; title: string; href: string }[] }>();
+for (const s of data.spaces) {
+  const { lat, lng } = s.data.location;
+  if (lat === undefined || lng === undefined) continue;
+  const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+  if (!pins.has(key)) pins.set(key, { lat, lng, places: [] });
+  pins.get(key)!.places.push({ id: s.id, title: s.data.title, href: entryUrl(s) });
+}
+---
+
+<Base
+  title="Makerspaces"
+  description="Workshops, labs, studios and material shops for making, on the TU Delft campus and nearby."
+  section="spaces"
+>
+  <div class="wrap">
+    <header class="page-head">
+      <span class="tag">Places</span>
+      <h1>Makerspaces</h1>
+      <p class="lede">
+        Workshops, labs, studios and material shops — on campus and a bike or train ride away. Every faculty has its own;
+        this is the one list of all of them.
+      </p>
+    </header>
+
+    <section data-filter>
+      <Filters
+        placeholder="Name, building, what you want to do…"
+        selects={[
+          { key: 'area', label: 'Where', all: 'Anywhere', options: used(AREAS, data.spaces.map((s) => s.data.area)) },
+          { key: 'kind', label: 'Kind of place', all: 'Any kind', options: used(SPACE_KINDS, data.spaces.map((s) => s.data.kind)) },
+          { key: 'skill', label: 'You want to do', all: 'Anything', options: skillOptions },
+        ]}
+      />
+
+      {
+        pins.size > 0 && (
+          <div class="mapbox">
+            <div id="map" data-pins={JSON.stringify([...pins.values()])} data-center={JSON.stringify(site.map.center)} data-zoom={site.map.zoom} />
+            <div class="caption">
+              {[...pins.values()].reduce((n, p) => n + p.places.length, 0)} of {data.spaces.length} places are on the map.
+              A number on a pin means several places share that building.
+            </div>
+          </div>
+        )
+      }
+
+      <ul class="grid grid-lg">
+        {
+          data.spaces.map((s) => (
+            <li
+              data-item
+              data-id={s.id}
+              data-text={[s.data.title, s.data.summary, s.data.organisation, s.data.location.building, s.data.location.address, AREAS[s.data.area], SPACE_KINDS[s.data.kind], ...data.skillsOfSpace(s).flatMap((k) => [k.data.title, ...k.data.aliases])].filter(Boolean).join(' ')}
+              data-area={s.data.area}
+              data-kind={s.data.kind}
+              data-skill={data.skillsOfSpace(s).map((k) => k.id).join('|')}
+            >
+              <SpaceCard space={s} />
+            </li>
+          ))
+        }
+      </ul>
+      <Empty what="a place" type="space" />
+    </section>
+  </div>
+</Base>
+
+<script>
+  import '../../scripts/filter';
+  import '../../scripts/map';
+</script>

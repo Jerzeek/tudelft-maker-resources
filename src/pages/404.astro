@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/data';
+---
+
+<Base title="Page not found">
+  <div class="wrap narrow section">
+    <span class="label">Error 404</span>
+    <h1 style="margin-top:12px">This page is not on the shelf.</h1>
+    <p class="lede muted">It may have been renamed or removed. Try the search, or start again from the home page.</p>
+    <p style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="btn btn-primary" href={url('/search/')}>Search</a>
+      <a class="btn" href={url('/')}>Home</a>
+    </p>
+  </div>
+</Base>

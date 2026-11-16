@@ -1,0 +1,127 @@
+---
+// The shared frame of every detail page (a makerspace, a machine, a skill…):
+// title, notices, photo, the text from index.md, a fact sheet at the side,
+// related pages, and the "improve this page" bar.
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from './Base.astro';
+import Icon from '../components/Icon.astro';
+import { COLLECTIONS } from '../forms/vocab.mjs';
+import { editUrl, formatMonth, isStale, needsHelp, url, type AnyEntry } from '../lib/data';
+
+interface Props { entry: AnyEntry; tag?: string }
+const { entry, tag } = Astro.props;
+const d = entry.data;
+const section = COLLECTIONS[entry.collection];
+const { Content } = await render(entry);
+const stale = isStale(entry);
+const thin = needsHelp(entry);
+const report = url(`/contribute/?type=correction&name=${encodeURIComponent(d.title)}`);
+// People pages use the photo as a small portrait instead of a wide cover.
+const cover = entry.collection !== 'people' && d.image;
+---
+
+<Base title={d.title} description={d.summary} section={entry.collection} image={d.image?.src}>
+  <div class="wrap">
+    <header class="page-head">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href={url('/')}>Home</a><span aria-hidden="true">/</span>
+        <a href={url(`/${section.path}/`)}>{section.plural}</a>
+      </nav>
+      <h1>{d.title}</h1>
+      <span class="tag">{tag ?? section.singular}</span>
+      {d.summary && <p class="lede" style="margin-top:12px">{d.summary}</p>}
+      <slot name="chips" />
+    </header>
+
+    <div class="detail">
+      <div>
+        {
+          stale && (
+            <div class="notice">
+              <Icon name="clock" size={20} />
+              <div>
+                <p>
+                  <b>Last checked in {formatMonth(d.lastReviewed!)}.</b> Opening hours, rules and machines change — confirm
+                  with the staff before you go.
+                </p>
+                <p class="small">
+                  Still correct, or not any more? <a href={report}>Tell us</a> and we will update the date.
+                </p>
+              </div>
+            </div>
+          )
+        }
+
+        {
+          cover && (
+            <figure class="cover">
+              <Image src={cover} alt={d.imageAlt ?? ''} width={1200} loading="eager" />
+              {d.imageCredit && <figcaption>Photo: {d.imageCredit}</figcaption>}
+            </figure>
+          )
+        }
+
+        <div class="prose"><Content /></div>
+
+        {
+          thin && (
+            <div class="notice quiet">
+              <Icon name="hand-helping" size={20} />
+              <div>
+                <p>
+                  <b>This page is just a start.</b> Do you know this {section.singular.toLowerCase()}? A few lines from
+                  you would help the next person a lot.
+                </p>
+                <p class="small">
+                  <a href={editUrl(entry)}>Write something on GitHub</a> or <a href={report}>send us what you know</a>.
+                </p>
+              </div>
+            </div>
+          )
+        }
+
+        <slot name="related" />
+
+        <div class="improve">
+          <p class="small muted">
+            {d.lastReviewed ? <>Last checked {formatMonth(d.lastReviewed)}. </> : null}
+            Anyone can improve this page.
+          </p>
+          <div class="btns">
+            <a class="btn btn-quiet btn-sm" href={report}><Icon name="flag" size={15} /> Report a mistake</a>
+            <a class="btn btn-sm" href={editUrl(entry)}><Icon name="pencil" size={15} /> Edit this page</a>
+          </div>
+        </div>
+      </div>
+
+      <aside class="facts" aria-label="Key facts">
+        <dl>
+          <slot name="facts" />
+          {
+            d.links.length > 0 && (
+              <div class="row">
+                <Icon name="link" size={18} />
+                <dt>Links</dt>
+                <dd>
+                  <ul>
+                    {d.links.map((l) => (
+                      <li><a href={l.url}>{l.label}</a></li>
+                    ))}
+                  </ul>
+                </dd>
+              </div>
+            )
+          }
+        </dl>
+        {Astro.slots.has('actions') && <div class="actions"><slot name="actions" /></div>}
+      </aside>
+    </div>
+  </div>
+</Base>
+
+<style>
+  @media (max-width: 900px) {
+    .facts { order: -1; }
+  }
+</style>

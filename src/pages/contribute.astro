@@ -1,0 +1,312 @@
+---
+// The Contribute page. The forms are generated from src/forms/definitions.mjs.
+// Nothing is sent from this page itself: the visitor's answers are handed to
+// GitHub (as a pre-filled issue) or to their e-mail program.
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import site from '../../site.config.mjs';
+import { FORMS, templateFile } from '../forms/definitions.mjs';
+import { getData } from '../lib/data';
+
+const data = await getData();
+const titlesOf = (source: string) => (data as any)[source].map((e: any) => e.data.title) as string[];
+const repoUrl = `https://github.com/${site.repo}`;
+---
+
+<Base title="Add or correct something" description="Add a makerspace, machine, project or yourself to the guide — or report a mistake. No account needed.">
+  <div class="wrap narrow" style="max-width:860px">
+    <header class="page-head">
+      <span class="tag">Take part</span>
+      <h1>Add or correct something</h1>
+      <p class="lede">
+        This guide is only as good as what its users put in. If you know a place, a machine or a trick that is missing —
+        or you spot something that is no longer true — tell us here.
+      </p>
+    </header>
+
+    <ol class="steps">
+      <li><b>Fill in what you know</b><span>Only the fields with a * are needed. Half an entry beats no entry.</span></li>
+      <li><b>Send it</b><span>With a GitHub account{site.contactEmail ? ', or simply by e-mail' : ''}. Nothing is published right away.</span></li>
+      <li><b>A maintainer checks it</b><span>After a quick look it goes live, usually within a few days.</span></li>
+    </ol>
+
+    <section class="section" style="padding-bottom:0" id="form">
+      <fieldset class="picker">
+        <legend class="label">What would you like to add?</legend>
+        {
+          FORMS.map((f, i) => (
+            <label class={f.collection ? `t-${f.collection}` : ''}>
+              <input type="radio" name="type" value={f.id} checked={i === 0} />
+              <span class="opt">
+                <Icon name={f.icon} size={22} />
+                <b>{f.name}</b>
+                <span>{f.description}</span>
+              </span>
+            </label>
+          ))
+        }
+      </fieldset>
+
+      {
+        FORMS.map((form, i) => (
+          <form
+            class="form"
+            novalidate
+            hidden={i !== 0}
+            data-form={form.id}
+            data-template={templateFile(form)}
+            data-issue-title={form.issueTitle}
+          >
+            <h2>{form.title}</h2>
+            {form.fields.map((f: any) => {
+              const id = `${form.id}-${f.id}`;
+              const req = f.required && <span class="req" aria-hidden="true">*</span>;
+              if (f.type === 'photo')
+                return (
+                  <div class="field">
+                    <span class="lbl">{f.label}</span>
+                    <span class="hint">
+                      A photo makes a page ten times more useful. You can add one in the next step: drag it into the “Photo”
+                      box on GitHub{site.contactEmail ? ', or attach it to your e-mail' : ''}. Use a photo you made yourself or may share.
+                    </span>
+                  </div>
+                );
+              if (f.type === 'consent')
+                return (
+                  <div class="field">
+                    <label style="display:flex;gap:10px;align-items:flex-start;font-weight:500">
+                      <input type="checkbox" name={f.id} data-label={f.label} data-kind="consent" required={f.required} style="width:auto;margin-top:5px" />
+                      <span>{f.option}{req}</span>
+                    </label>
+                  </div>
+                );
+              if (f.type === 'pick-many') {
+                const options = titlesOf(f.source);
+                return (
+                  <div class="field" data-many={f.id} data-label={f.label}>
+                    <span class="lbl" id={`${id}-lbl`}>{f.label}{req}</span>
+                    {options.length > 0 && (
+                      <div class="checks" role="group" aria-labelledby={`${id}-lbl`} style={options.length > 24 ? 'max-height:170px;overflow:auto;padding:4px' : undefined}>
+                        {options.map((o) => (
+                          <label><input type="checkbox" value={o} /><span>{o}</span></label>
+                        ))}
+                      </div>
+                    )}
+                    <label class="hint" for={id} style="margin-top:8px">
+                      {options.length > 0 ? 'Not in the list? Type it here (separate several with commas).' : f.hint}
+                    </label>
+                    <input id={id} type="text" data-other autocomplete="off" />
+                  </div>
+                );
+              }
+              return (
+                <div class="field">
+                  <label for={id}>{f.label}{req}</label>
+                  {f.hint && <span class="hint" id={`${id}-hint`}>{f.hint}</span>}
+                  {f.type === 'textarea' && (
+                    <textarea id={id} name={f.id} data-label={f.label} required={f.required} aria-describedby={f.hint ? `${id}-hint` : undefined} />
+                  )}
+                  {f.type === 'dropdown' && (
+                    <select id={id} name={f.id} data-label={f.label} required={f.required}>
+                      <option value="">Choose…</option>
+                      {Object.values(f.options as Record<string, string>).map((o) => <option>{o}</option>)}
+                    </select>
+                  )}
+                  {(f.type === 'input' || f.type === 'pick-one') && (
+                    <input
+                      id={id}
+                      type="text"
+                      name={f.id}
+                      data-label={f.label}
+                      required={f.required}
+                      placeholder={f.placeholder}
+                      list={f.type === 'pick-one' ? `${id}-list` : undefined}
+                      aria-describedby={f.hint ? `${id}-hint` : undefined}
+                      autocomplete="off"
+                    />
+                  )}
+                  {f.type === 'pick-one' && (
+                    <datalist id={`${id}-list`}>{titlesOf(f.source).map((o) => <option value={o} />)}</datalist>
+                  )}
+                </div>
+              );
+            })}
+
+            <p class="error" role="alert" hidden />
+            <div class="send">
+              <button class="btn btn-primary" type="submit" data-send="github"><Icon name="send" size={16} /> Send with GitHub</button>
+              {site.contactEmail && (
+                <button class="btn" type="submit" data-send="email"><Icon name="mail" size={16} /> Send by e-mail</button>
+              )}
+              <button class="btn btn-quiet" type="submit" data-send="copy"><Icon name="copy" size={16} /> Copy as text</button>
+            </div>
+            <p class="form-status" role="status" hidden />
+            <p class="small muted" style="margin:14px 0 0">
+              “Send with GitHub” opens a pre-filled form on GitHub (free account needed), where you can still add a photo
+              before you submit.
+              {site.contactEmail
+                ? ' “Send by e-mail” opens your mail program with everything filled in.'
+                : ' No account? Use “Copy as text” and send it to one of the maintainers.'}
+            </p>
+          </form>
+        ))
+      }
+    </section>
+
+    <section class="section">
+      <h2>Other ways to help</h2>
+      <div class="prose">
+        <ul>
+          <li>
+            <strong>Fix a page directly.</strong> Every page ends with an <em>Edit this page</em> button. It opens the text
+            on GitHub, where you can change it and propose the change with one click.
+          </li>
+          <li>
+            <strong>Adopt a page.</strong> Pages marked <em>Help fill in</em> are waiting for someone who knows the place.
+            Workshop staff: you are the best person to keep your own page correct.
+          </li>
+          <li>
+            <strong>Want to go deeper?</strong> The <a href={`${repoUrl}/blob/${site.branch}/CONTRIBUTING.md`}>contributing guide</a> explains
+            how pages are built, with examples to copy.
+          </li>
+        </ul>
+        <h3>What we publish</h3>
+        <p>
+          Practical information about places, machines and skills. People are only listed if they agreed to it, and are
+          removed on request. Please do not submit private phone numbers, photos of recognisable people without their
+          permission, or anything you are not allowed to share.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <div id="contribute-config" data-repo={repoUrl} data-email={site.contactEmail} data-site={site.name} hidden></div>
+</Base>
+
+<script>
+  const config = document.getElementById('contribute-config')!.dataset;
+  const forms = [...document.querySelectorAll<HTMLFormElement>('form[data-form]')];
+  const radios = [...document.querySelectorAll<HTMLInputElement>('input[name="type"]')];
+  const params = new URLSearchParams(location.search);
+
+  const show = (id: string) => {
+    for (const f of forms) f.hidden = f.dataset.form !== id;
+    for (const r of radios) r.checked = r.value === id;
+  };
+  for (const r of radios) r.addEventListener('change', () => show(r.value));
+
+  // Links such as /contribute/?type=equipment&space=IDE%20PMB pre-fill the form.
+  const wanted = params.get('type');
+  if (wanted && forms.some((f) => f.dataset.form === wanted)) {
+    show(wanted);
+    const form = forms.find((f) => f.dataset.form === wanted)!;
+    for (const [key, value] of params) {
+      const el = form.elements.namedItem(key);
+      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) el.value = value;
+    }
+    document.getElementById('form')!.scrollIntoView();
+  }
+
+  /** Collect the answers of a form as [field id, label, value]. */
+  const answers = (form: HTMLFormElement) => {
+    const out: { id: string; label: string; value: string }[] = [];
+    for (const el of form.querySelectorAll<HTMLElement>('[data-label]')) {
+      if (el.dataset.many) {
+        const picked = [...el.querySelectorAll<HTMLInputElement>('input[type=checkbox]:checked')].map((c) => c.value);
+        const other = el.querySelector<HTMLInputElement>('[data-other]')!.value.split(',').map((s) => s.trim()).filter(Boolean);
+        out.push({ id: el.dataset.many, label: el.dataset.label!, value: [...picked, ...other].join(', ') });
+      } else if (el.dataset.kind === 'consent') {
+        out.push({ id: (el as HTMLInputElement).name, label: el.dataset.label!, value: (el as HTMLInputElement).checked ? 'yes' : '' });
+      } else {
+        const input = el as HTMLInputElement;
+        out.push({ id: input.name, label: el.dataset.label!, value: input.value.trim() });
+      }
+    }
+    return out;
+  };
+
+  /** The same layout GitHub uses for issue forms, so maintainers can paste it straight in. */
+  const asText = (list: ReturnType<typeof answers>) =>
+    list
+      .filter((a) => a.id !== 'consent' || a.value)
+      .map((a) => `### ${a.label}\n\n${a.id === 'consent' ? '- [x] I have permission to publish this.' : a.value || '_No response_'}`)
+      .join('\n\n');
+
+  const issueUrl = (form: HTMLFormElement, list: ReturnType<typeof answers>, skip: string[] = []) => {
+    const u = new URL(`${config.repo}/issues/new`);
+    u.searchParams.set('template', form.dataset.template!);
+    u.searchParams.set('title', form.dataset.issueTitle! + (list.find((a) => a.id === 'name')?.value ?? ''));
+    for (const a of list) if (a.value && a.id !== 'consent' && !skip.includes(a.id)) u.searchParams.set(a.id, a.value);
+    return u.toString();
+  };
+
+  for (const form of forms) {
+    const error = form.querySelector<HTMLElement>('.error')!;
+    const status = form.querySelector<HTMLElement>('.form-status')!;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const how = (e.submitter as HTMLElement | null)?.dataset.send ?? 'github';
+      status.hidden = true;
+
+      // Check the required fields ourselves, so the message is friendly.
+      const missing = [...form.querySelectorAll<HTMLInputElement>('[required]')].filter((el) =>
+        el.type === 'checkbox' ? !el.checked : !el.value.trim(),
+      );
+      for (const el of form.querySelectorAll('[aria-invalid]')) el.removeAttribute('aria-invalid');
+      if (missing.length) {
+        for (const el of missing) el.setAttribute('aria-invalid', 'true');
+        error.textContent = `Please fill in: ${missing.map((el) => el.dataset.label).join(', ')}.`;
+        error.hidden = false;
+        missing[0].focus();
+        return;
+      }
+      error.hidden = true;
+
+      const list = answers(form);
+      const text = asText(list);
+      const title = form.dataset.issueTitle! + (list.find((a) => a.id === 'name')?.value ?? '');
+      const say = (message: string) => {
+        status.textContent = message;
+        status.hidden = false;
+      };
+      const copy = async () => {
+        try {
+          await navigator.clipboard.writeText(`${title}\n\n${text}`);
+          return true;
+        } catch {
+          return false;
+        }
+      };
+
+      if (how === 'copy') {
+        say((await copy()) ? 'Copied. Paste it into an e-mail or chat message to a maintainer.' : 'Copying is blocked by your browser. Please select the text in the form and copy it by hand.');
+        return;
+      }
+
+      if (how === 'email') {
+        // Web addresses that are too long get cut off by some mail programs,
+        // so the maintainer link leaves out the long free-text answers.
+        const link = issueUrl(form, list, ['details', 'problem', 'fix', 'access-notes', 'training-notes']);
+        const body = `Hello,\n\nI would like to contribute to ${config.site}.\n\n${text}\n\n---\nFor the maintainers: open this link to file the submission, then paste any long texts from above:\n${link}\n`;
+        location.href = `mailto:${config.email}?subject=${encodeURIComponent(`[${config.site}] ${title}`)}&body=${encodeURIComponent(body)}`;
+        say('Your mail program should open now. Attach a photo if you have one, and press send.');
+        return;
+      }
+
+      let link = issueUrl(form, list);
+      if (link.length > 6000) {
+        // Too long for a web address: leave the long text out and put it on the clipboard instead.
+        link = issueUrl(form, list, ['details', 'problem', 'fix']);
+        const copied = await copy();
+        say(
+          copied
+            ? 'GitHub opened in a new tab. Your longer text did not fit in the link, so it was copied: paste it into the matching box.'
+            : 'GitHub opened in a new tab. Your longer text did not fit in the link: please copy it from this page into the matching box.',
+        );
+      } else {
+        say('GitHub opened in a new tab. Check your answers there, add a photo if you like, and press “Create”.');
+      }
+      window.open(link, '_blank', 'noopener');
+    });
+  }
+</script>

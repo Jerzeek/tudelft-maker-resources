@@ -1,0 +1,63 @@
+---
+import Entry from '../../layouts/Entry.astro';
+import Fact from '../../components/Fact.astro';
+import Icon from '../../components/Icon.astro';
+import EquipmentCard from '../../components/EquipmentCard.astro';
+import { getData, entryUrl, type Project } from '../../lib/data';
+
+export async function getStaticPaths() {
+  const data = await getData();
+  return data.projects.map((project) => ({ params: { id: project.id }, props: { project } }));
+}
+interface Props { project: Project }
+const { project } = Astro.props;
+const d = project.data;
+const data = await getData();
+const skills = data.pick(data.index.skills, d.skills);
+const makers = data.pick(data.index.people, d.makers);
+const machines = data.pick(data.index.equipment, d.equipment);
+// Where it was made: the places named on the page plus the homes of the machines used.
+const spaces = [
+  ...new Map(
+    [...data.pick(data.index.spaces, d.spaces), ...machines.map((m) => data.index.spaces.get(m.data.space.id)!)].map((s) => [s.id, s]),
+  ).values(),
+];
+---
+
+<Entry entry={project} tag={d.year ? `Project · ${d.year}` : 'Project'}>
+  <ul class="chips" slot="chips" style="margin-top:14px">
+    {skills.map((s) => <li><a class="chip chip-skills chip-lg" href={entryUrl(s)}><Icon name={s.data.icon} size={15} /> {s.data.title}</a></li>)}
+  </ul>
+
+  <Fragment slot="facts">
+    {
+      (makers.length > 0 || d.credit) && (
+        <Fact icon="people" label="Made by">
+          <ul>
+            {makers.map((p) => <li><a href={entryUrl(p)}>{p.data.title}</a></li>)}
+            {d.credit && <li>{d.credit}</li>}
+          </ul>
+        </Fact>
+      )
+    }
+    {d.year && <Fact icon="calendar-check" label="Year">{d.year}</Fact>}
+    {
+      spaces.length > 0 && (
+        <Fact icon="map-pin" label="Made at">
+          <ul>{spaces.map((s) => <li><a href={entryUrl(s)}>{s.data.title}</a></li>)}</ul>
+        </Fact>
+      )
+    }
+  </Fragment>
+
+  <Fragment slot="related">
+    {
+      machines.length > 0 && (
+        <section class="related t-equipment">
+          <h2>Machines used <span class="n">{machines.length}</span></h2>
+          <ul class="grid">{machines.map((m) => <li><EquipmentCard item={m} /></li>)}</ul>
+        </section>
+      )
+    }
+  </Fragment>
+</Entry>

@@ -1,0 +1,69 @@
+---
+import Base from '../../layouts/Base.astro';
+import PersonCard from '../../components/PersonCard.astro';
+import Filters from '../../components/Filters.astro';
+import Empty from '../../components/Empty.astro';
+import Icon from '../../components/Icon.astro';
+import { getData, url } from '../../lib/data';
+import { ROLES } from '../../forms/vocab.mjs';
+
+const data = await getData();
+const skillOptions = data.skills.filter((s) => data.peopleWithSkill(s.id).length).map((s) => ({ value: s.id, label: s.data.title }));
+const roleOptions = Object.entries(ROLES)
+  .filter(([k]) => data.people.some((p) => p.data.role === k))
+  .map(([value, label]) => ({ value, label }));
+---
+
+<Base
+  title="People"
+  description="Workshop staff, teachers and makers who are happy to be asked for help."
+  section="people"
+>
+  <div class="wrap">
+    <header class="page-head">
+      <span class="tag">Who to ask</span>
+      <h1>People</h1>
+      <p class="lede">
+        Workshop staff, teachers and fellow makers who are happy to be asked. Everyone here chose to be listed.
+      </p>
+    </header>
+
+    <section data-filter>
+      <Filters
+        placeholder="Name, place or skill…"
+        selects={[
+          { key: 'skill', label: 'Can help with', all: 'Anything', options: skillOptions },
+          { key: 'role', label: 'Role', all: 'Anyone', options: roleOptions },
+        ]}
+      />
+      <ul class="grid">
+        {
+          data.people.map((p) => (
+            <li
+              data-item
+              data-id={p.id}
+              data-text={[p.data.title, p.data.summary, ROLES[p.data.role], ...data.spacesOfPerson(p.id).map((s) => s.data.title), ...data.pick(data.index.skills, p.data.skills).flatMap((k) => [k.data.title, ...k.data.aliases])].filter(Boolean).join(' ')}
+              data-skill={p.data.skills.map((k) => k.id).join('|')}
+              data-role={p.data.role}
+            >
+              <PersonCard person={p} chips />
+            </li>
+          ))
+        }
+      </ul>
+      <Empty what="someone" type="person" />
+    </section>
+
+    <div class="notice quiet" style="margin-top:28px">
+      <Icon name="hand-helping" size={20} />
+      <div>
+        <p><b>Good at something? Put yourself on the list.</b> Students too — the best help is often the person at the next table.</p>
+        <p class="small"><a href={url('/contribute/?type=person')}>Add yourself</a> · You can be removed again at any time.</p>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import '../../scripts/filter';
+</script>

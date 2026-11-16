@@ -1,0 +1,41 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { getData, entryUrl, needsHelp, type Space } from '../lib/data';
+import { AREAS, SPACE_KINDS } from '../forms/vocab.mjs';
+
+interface Props { space: Space }
+const { space } = Astro.props;
+const d = space.data;
+const data = await getData();
+const skills = data.skillsOfSpace(space);
+const machines = data.equipmentIn(space.id).length;
+const where = [d.location.building, AREAS[d.area]].filter(Boolean)[0];
+---
+
+<article class="card t-spaces">
+  {
+    d.image ? (
+      <div class="card-media">
+        <Image src={d.image} alt="" width={640} height={400} fit="cover" loading="lazy" />
+      </div>
+    ) : (
+      <div class="card-media placeholder"><Icon name="spaces" size={44} /></div>
+    )
+  }
+  {needsHelp(space) && <span class="help-flag">Help fill in</span>}
+  <div class="card-body">
+    <span class="tag">{SPACE_KINDS[d.kind]}</span>
+    <h3><a href={entryUrl(space)}>{d.title}</a></h3>
+    {d.summary && <p class="clamp-3">{d.summary}</p>}
+    <span class="meta"><Icon name="map-pin" size={15} /> {where}{machines > 0 && <> · {machines} machine{machines > 1 && 's'}</>}</span>
+    {
+      skills.length > 0 && (
+        <ul class="chips">
+          {skills.slice(0, 4).map((s) => <li class="chip chip-skills">{s.data.title}</li>)}
+          {skills.length > 4 && <li class="chip">+{skills.length - 4}</li>}
+        </ul>
+      )
+    }
+  </div>
+</article>

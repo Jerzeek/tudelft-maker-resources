@@ -1,0 +1,57 @@
+# This file is generated from src/forms/definitions.mjs.
+# Do not edit it by hand: change the definitions and run `npm run forms`.
+name: Add yourself
+description: Let others know what you can help with. Only add yourself, or someone who asked you to.
+title: "Add person: "
+labels:
+  - submission
+  - person
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for helping! Fill in what you know — only the fields marked with a red star are required. After you submit, a draft page is prepared automatically and a maintainer checks it before it goes live.
+  - type: input
+    id: name
+    attributes:
+      label: Name, as it should be shown
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: How are you involved?
+      options:
+        - Workshop staff
+        - Teacher
+        - Researcher
+        - Student
+        - Maker
+    validations:
+      required: true
+  - type: input
+    id: skills
+    attributes:
+      label: What can you help others with?
+      description: "Separate several with commas, for example: 3D printing, Electronics"
+  - type: input
+    id: summary
+    attributes:
+      label: One line about you
+      placeholder: e.g. Runs the textile corner; ask me about e-textiles
+  - type: input
+    id: profile
+    attributes:
+      label: Link to a profile page
+      placeholder: https://
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else worth knowing
+      description: What you work on, when and where people can find you…
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Permission
+      options:
+        - label: I am this person, or I have their permission, and I agree that this information is published on a public website.
+          required: true

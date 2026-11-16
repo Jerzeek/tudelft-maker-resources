@@ -1,0 +1,102 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { url } from '../lib/data';
+---
+
+<Base title="Search" description="Search makerspaces, machines, skills, people and projects.">
+  <div class="wrap narrow">
+    <header class="page-head">
+      <h1>Search</h1>
+    </header>
+    <form class="bigsearch" role="search" id="search-form" style="max-width:none">
+      <div class="field">
+        <label class="sr-only" for="search-q">Search everything</label>
+        <Icon name="search" size={20} />
+        <input id="search-q" type="search" name="q" placeholder="Makerspaces, machines, skills, people…" autocomplete="off" autofocus />
+      </div>
+    </form>
+    <p class="muted small" id="search-status" aria-live="polite" style="margin:18px 0 12px">Type to search.</p>
+    <ol class="results" id="search-results" data-index={url('/search-index.json')} data-contribute={url('/contribute/')}></ol>
+    <noscript><p class="notice">Search needs JavaScript. You can also browse the lists in the menu.</p></noscript>
+  </div>
+</Base>
+
+<script>
+  type Doc = { type: string; kind: string; title: string; url: string; summary: string; keywords: string; text: string };
+
+  const input = document.getElementById('search-q') as HTMLInputElement;
+  const list = document.getElementById('search-results')!;
+  const status = document.getElementById('search-status')!;
+  const norm = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+  let docs: (Doc & { n: { title: string; keywords: string; summary: string; text: string } })[] = [];
+  const ready = fetch(list.dataset.index!)
+    .then((r) => r.json())
+    .then((d: Doc[]) => {
+      docs = d.map((x) => ({ ...x, n: { title: norm(x.title), keywords: norm(x.keywords), summary: norm(x.summary), text: norm(x.text) } }));
+    })
+    .catch(() => {
+      status.textContent = 'Search could not be loaded. Please try again, or browse the lists in the menu.';
+    });
+
+  // A word in the title counts most, then keywords (skills, place names), then the text.
+  const score = (doc: (typeof docs)[number], words: string[]) => {
+    let total = 0;
+    for (const w of words) {
+      let s = 0;
+      if (doc.n.title === w) s = 30;
+      else if (doc.n.title.split(/\W+/).some((t) => t.startsWith(w))) s = 16;
+      else if (doc.n.title.includes(w)) s = 10;
+      if (doc.n.keywords.includes(w)) s += 5;
+      if (doc.n.summary.includes(w)) s += 3;
+      if (doc.n.text.includes(w)) s += 1;
+      if (s === 0) return 0; // every word must be found somewhere
+      total += s;
+    }
+    return total;
+  };
+
+  const highlight = (text: string, words: string[]) => {
+    let out = esc(text);
+    for (const w of words) {
+      if (w.length < 2) continue;
+      out = out.replace(new RegExp(`(${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<mark>$1</mark>');
+    }
+    return out;
+  };
+
+  const run = async () => {
+    await ready;
+    const q = input.value.trim();
+    const words = norm(q).split(/\s+/).filter(Boolean);
+    const next = new URL(location.href);
+    q ? next.searchParams.set('q', q) : next.searchParams.delete('q');
+    history.replaceState(null, '', next);
+    if (!words.length) {
+      list.innerHTML = '';
+      status.textContent = 'Type to search.';
+      return;
+    }
+    const hits = docs
+      .map((d) => ({ d, s: score(d, words) }))
+      .filter((h) => h.s > 0)
+      .sort((a, b) => b.s - a.s || a.d.title.localeCompare(b.d.title))
+      .slice(0, 40);
+    status.textContent = hits.length ? `${hits.length} result${hits.length > 1 ? 's' : ''} for “${q}”` : '';
+    list.innerHTML = hits.length
+      ? hits
+          .map(
+            ({ d }) =>
+              `<li><a class="result t-${d.type}" href="${esc(d.url)}"><span class="tag">${esc(d.kind)}</span><h3>${highlight(d.title, words)}</h3><p>${highlight(d.summary, words)}</p></a></li>`,
+          )
+          .join('')
+      : `<li class="empty"><b>Nothing found for “${esc(q)}”.</b>Try another word — or, if it exists but is not listed yet, <a href="${esc(list.dataset.contribute!)}">add it</a>.</li>`;
+  };
+
+  input.value = new URLSearchParams(location.search).get('q') ?? '';
+  input.addEventListener('input', run);
+  document.getElementById('search-form')!.addEventListener('submit', (e) => e.preventDefault());
+  run();
+</script>

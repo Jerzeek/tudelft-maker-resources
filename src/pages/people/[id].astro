@@ -1,0 +1,85 @@
+---
+import { Image } from 'astro:assets';
+import Entry from '../../layouts/Entry.astro';
+import Fact from '../../components/Fact.astro';
+import Icon from '../../components/Icon.astro';
+import SpaceCard from '../../components/SpaceCard.astro';
+import EquipmentCard from '../../components/EquipmentCard.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { getData, entryUrl, type Person } from '../../lib/data';
+import { ROLES } from '../../forms/vocab.mjs';
+
+export async function getStaticPaths() {
+  const data = await getData();
+  return data.people.map((person) => ({ params: { id: person.id }, props: { person } }));
+}
+interface Props { person: Person }
+const { person } = Astro.props;
+const d = person.data;
+const data = await getData();
+const skills = data.pick(data.index.skills, d.skills);
+const spaces = data.spacesOfPerson(person.id);
+const machines = data.equipmentOfPerson(person.id);
+const projects = data.projectsOfPerson(person.id);
+---
+
+<Entry entry={person} tag={ROLES[d.role]}>
+  <ul class="chips" slot="chips" style="margin-top:14px">
+    {skills.map((s) => <li><a class="chip chip-skills chip-lg" href={entryUrl(s)}><Icon name={s.data.icon} size={15} /> {s.data.title}</a></li>)}
+  </ul>
+
+  <Fragment slot="facts">
+    {
+      d.image && (
+        <div style="padding:14px 0 4px">
+          <Image src={d.image} alt={d.imageAlt ?? ''} width={300} height={300} fit="cover" style="border-radius:50%;width:120px;height:120px;border:1.5px solid var(--edge)" />
+        </div>
+      )
+    }
+    <Fact icon="people" label="Role">{ROLES[d.role]}</Fact>
+    {
+      spaces.length > 0 && (
+        <Fact icon="map-pin" label="Find them at">
+          <ul>{spaces.map((s) => <li><a href={entryUrl(s)}>{s.data.title}</a></li>)}</ul>
+        </Fact>
+      )
+    }
+    {
+      (d.email || d.profileUrl) && (
+        <Fact icon="mail" label="Contact">
+          <ul>
+            {d.email && <li><a href={`mailto:${d.email}`}>{d.email}</a></li>}
+            {d.profileUrl && <li><a href={d.profileUrl}>Profile page</a></li>}
+          </ul>
+        </Fact>
+      )
+    }
+  </Fragment>
+
+  <Fragment slot="related">
+    {
+      spaces.length > 0 && (
+        <section class="related t-spaces">
+          <h2>Contact for <span class="n">{spaces.length}</span></h2>
+          <ul class="grid grid-lg">{spaces.map((s) => <li><SpaceCard space={s} /></li>)}</ul>
+        </section>
+      )
+    }
+    {
+      machines.length > 0 && (
+        <section class="related t-equipment">
+          <h2>Machines to ask them about <span class="n">{machines.length}</span></h2>
+          <ul class="grid">{machines.map((m) => <li><EquipmentCard item={m} /></li>)}</ul>
+        </section>
+      )
+    }
+    {
+      projects.length > 0 && (
+        <section class="related t-projects">
+          <h2>Projects <span class="n">{projects.length}</span></h2>
+          <ul class="grid grid-lg">{projects.map((p) => <li><ProjectCard project={p} /></li>)}</ul>
+        </section>
+      )
+    }
+  </Fragment>
+</Entry>

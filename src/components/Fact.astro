@@ -1,0 +1,12 @@
+---
+// One row in the fact sheet at the side of a page.
+import Icon from './Icon.astro';
+interface Props { icon: string; label: string }
+const { icon, label } = Astro.props;
+---
+
+<div class="row">
+  <Icon name={icon} size={18} />
+  <dt>{label}</dt>
+  <dd><slot /></dd>
+</div>

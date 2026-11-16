@@ -1,0 +1,68 @@
+---
+import Entry from '../../layouts/Entry.astro';
+import Fact from '../../components/Fact.astro';
+import Icon from '../../components/Icon.astro';
+import SpaceCard from '../../components/SpaceCard.astro';
+import EquipmentCard from '../../components/EquipmentCard.astro';
+import PersonCard from '../../components/PersonCard.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { getData, url, type Skill } from '../../lib/data';
+
+export async function getStaticPaths() {
+  const data = await getData();
+  return data.skills.map((skill) => ({ params: { id: skill.id }, props: { skill } }));
+}
+interface Props { skill: Skill }
+const { skill } = Astro.props;
+const data = await getData();
+const spaces = data.spacesForSkill(skill.id);
+const machines = data.equipmentForSkill(skill.id);
+const people = data.peopleWithSkill(skill.id);
+const projects = data.projectsWithSkill(skill.id);
+---
+
+<Entry entry={skill}>
+  <Fragment slot="facts">
+    <Fact icon="spaces" label="Places">{spaces.length ? <a href="#places">{spaces.length} where you can do this</a> : 'None listed yet'}</Fact>
+    <Fact icon="equipment" label="Machines">{machines.length ? <a href="#machines">{machines.length} listed</a> : 'None listed yet'}</Fact>
+    <Fact icon="people" label="People">{people.length ? <a href="#people">{people.length} can help</a> : 'Nobody listed yet'}</Fact>
+    <Fact icon="projects" label="Projects">{projects.length ? <a href="#projects">{projects.length} used this</a> : 'None shared yet'}</Fact>
+  </Fragment>
+
+  <a slot="actions" class="btn btn-primary" href={url('/contribute/?type=person')}><Icon name="plus" size={16} /> I can help with this</a>
+
+  <Fragment slot="related">
+    {
+      spaces.length > 0 && (
+        <section class="related t-spaces" id="places">
+          <h2>Where you can do this <span class="n">{spaces.length}</span></h2>
+          <ul class="grid grid-lg">{spaces.map((s) => <li><SpaceCard space={s} /></li>)}</ul>
+        </section>
+      )
+    }
+    {
+      machines.length > 0 && (
+        <section class="related t-equipment" id="machines">
+          <h2>Machines <span class="n">{machines.length}</span></h2>
+          <ul class="grid">{machines.map((m) => <li><EquipmentCard item={m} /></li>)}</ul>
+        </section>
+      )
+    }
+    {
+      people.length > 0 && (
+        <section class="related t-people" id="people">
+          <h2>People who can help <span class="n">{people.length}</span></h2>
+          <ul class="grid">{people.map((p) => <li><PersonCard person={p} /></li>)}</ul>
+        </section>
+      )
+    }
+    {
+      projects.length > 0 && (
+        <section class="related t-projects" id="projects">
+          <h2>Projects <span class="n">{projects.length}</span></h2>
+          <ul class="grid grid-lg">{projects.map((p) => <li><ProjectCard project={p} /></li>)}</ul>
+        </section>
+      )
+    }
+  </Fragment>
+</Entry>

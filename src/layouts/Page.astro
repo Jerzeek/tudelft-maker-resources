@@ -1,0 +1,29 @@
+---
+// Frame for simple text pages written in Markdown (About, More resources).
+import Base from './Base.astro';
+import Icon from '../components/Icon.astro';
+import site from '../../site.config.mjs';
+
+interface Props { frontmatter: { title: string; description?: string; label?: string; file: string } }
+const { frontmatter } = Astro.props;
+const source = frontmatter.file.slice(frontmatter.file.indexOf('/src/pages/') + 1);
+---
+
+<Base title={frontmatter.title} description={frontmatter.description}>
+  <div class="wrap narrow">
+    <header class="page-head">
+      {frontmatter.label && <span class="tag">{frontmatter.label}</span>}
+      <h1>{frontmatter.title}</h1>
+      {frontmatter.description && <p class="lede">{frontmatter.description}</p>}
+    </header>
+    <div class="prose" style="padding-top:12px">
+      <slot />
+    </div>
+    <div class="improve">
+      <p class="small muted">Anyone can improve this page.</p>
+      <div class="btns">
+        <a class="btn btn-sm" href={`https://github.com/${site.repo}/edit/${site.branch}/${source}`}><Icon name="pencil" size={15} /> Edit this page</a>
+      </div>
+    </div>
+  </div>
+</Base>

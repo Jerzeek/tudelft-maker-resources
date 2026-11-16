@@ -1,0 +1,85 @@
+# This file is generated from src/forms/definitions.mjs.
+# Do not edit it by hand: change the definitions and run `npm run forms`.
+name: Add a machine or tool
+description: A 3D printer, laser cutter, sewing machine, oscilloscope… anything people can use.
+title: "Add equipment: "
+labels:
+  - submission
+  - equipment
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for helping! Fill in what you know — only the fields marked with a red star are required. After you submit, a draft page is prepared automatically and a maintainer checks it before it goes live.
+  - type: input
+    id: name
+    attributes:
+      label: Name of the machine or tool
+      placeholder: e.g. Laser cutter
+    validations:
+      required: true
+  - type: input
+    id: space
+    attributes:
+      label: In which makerspace is it?
+      description: Use the name as it appears on this site. Is the place missing? Add the makerspace first.
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Brand and model
+      placeholder: e.g. Trotec Speedy 360
+  - type: input
+    id: quantity
+    attributes:
+      label: How many are there?
+      placeholder: e.g. 3
+  - type: input
+    id: summary
+    attributes:
+      label: What is it good for, in a sentence?
+  - type: input
+    id: skills
+    attributes:
+      label: Which skills does it involve?
+      description: "Separate several with commas, for example: 3D printing, Electronics"
+  - type: dropdown
+    id: training
+    attributes:
+      label: What do you need before using it?
+      options:
+        - No training needed
+        - Training required
+        - Operated by staff
+        - By arrangement
+  - type: textarea
+    id: training-notes
+    attributes:
+      label: How do you get trained or get access?
+      description: Where to sign up, how long it takes, who to ask.
+  - type: input
+    id: booking
+    attributes:
+      label: How do you reserve it?
+      placeholder: e.g. Walk in, or a link to the booking page
+  - type: input
+    id: manual
+    attributes:
+      label: Link to a manual or instructions
+      placeholder: https://
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else worth knowing
+      description: Materials it can handle, maximum size, typical mistakes, tips…
+  - type: textarea
+    id: photo
+    attributes:
+      label: Photo
+      description: Drag one photo that you made yourself (or may share) into this box. Avoid recognisable people unless they agree.
+      placeholder: Drag a photo here.
+  - type: input
+    id: submitter
+    attributes:
+      label: Your name or e-mail (optional)
+      description: Only used if we have a question about your submission. It is visible to others on GitHub, so leave it empty if you prefer.

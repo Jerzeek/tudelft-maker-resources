@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import Filters from '../../components/Filters.astro';
+import Empty from '../../components/Empty.astro';
+import Icon from '../../components/Icon.astro';
+import { getData, url } from '../../lib/data';
+
+const data = await getData();
+const skillOptions = data.skills.filter((s) => data.projectsWithSkill(s.id).length).map((s) => ({ value: s.id, label: s.data.title }));
+---
+
+<Base
+  title="Projects"
+  description="Things made at TU Delft, with the machines and skills that went into them."
+  section="projects"
+>
+  <div class="wrap">
+    <header class="page-head">
+      <span class="tag">Made here</span>
+      <h1>Projects</h1>
+      <p class="lede">
+        Things people made, and how. Each project links to the machines and skills behind it, so you can follow the same
+        path.
+      </p>
+    </header>
+
+    <section data-filter>
+      <Filters placeholder="What are you curious about?" selects={[{ key: 'skill', label: 'Skill', all: 'Any skill', options: skillOptions }]} />
+      <ul class="grid grid-lg">
+        {
+          data.projects.map((p) => (
+            <li
+              data-item
+              data-id={p.id}
+              data-text={[p.data.title, p.data.summary, p.data.credit, ...data.pick(data.index.skills, p.data.skills).flatMap((k) => [k.data.title, ...k.data.aliases])].filter(Boolean).join(' ')}
+              data-skill={p.data.skills.map((k) => k.id).join('|')}
+            >
+              <ProjectCard project={p} />
+            </li>
+          ))
+        }
+      </ul>
+      <Empty what="a project" type="project" />
+    </section>
+
+    <div class="notice quiet" style="margin-top:28px">
+      <Icon name="projects" size={20} />
+      <div>
+        <p><b>Made something? Show it.</b> A photo and three sentences are enough to inspire the next maker.</p>
+        <p class="small"><a href={url('/contribute/?type=project')}>Share your project</a></p>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import '../../scripts/filter';
+</script>

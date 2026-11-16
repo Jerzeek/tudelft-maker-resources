@@ -1,0 +1,35 @@
+# Once a month: list pages that are getting old or are nearly empty, and test
+# all links. The result is posted as an issue called "Content check-up", which
+# is replaced by a fresh one each month.
+name: Content check-up
+
+on:
+  schedule:
+    - cron: '0 6 1 * *' # 06:00 UTC on the first day of every month
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Make the report
+        run: node scripts/content-health.mjs --links --out "$RUNNER_TEMP/report.md"
+      - name: Post it as an issue
+        run: |
+          # Close last month's report, then open the new one.
+          for number in $(gh issue list --label maintenance --state open --search "Content check-up in:title" --json number --jq '.[].number'); do
+            gh issue close "$number" --comment "Replaced by a newer check-up."
+          done
+          gh issue create --title "Content check-up $(date +'%B %Y')" --label maintenance --body-file "$RUNNER_TEMP/report.md"

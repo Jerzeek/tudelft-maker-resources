@@ -1,0 +1,63 @@
+---
+import Base from '../../layouts/Base.astro';
+import EquipmentCard from '../../components/EquipmentCard.astro';
+import Filters from '../../components/Filters.astro';
+import Empty from '../../components/Empty.astro';
+import { getData } from '../../lib/data';
+import { TRAINING } from '../../forms/vocab.mjs';
+
+const data = await getData();
+const spaceOptions = data.spaces.filter((s) => data.equipmentIn(s.id).length).map((s) => ({ value: s.id, label: s.data.title }));
+const skillOptions = data.skills.filter((s) => data.equipmentForSkill(s.id).length).map((s) => ({ value: s.id, label: s.data.title }));
+const trainingOptions = Object.entries(TRAINING)
+  .filter(([k]) => data.equipment.some((e) => e.data.training === k))
+  .map(([value, label]) => ({ value, label }));
+---
+
+<Base
+  title="Equipment"
+  description="Machines and tools you can use at TU Delft: where they stand, what you need to use them, and who to ask."
+  section="equipment"
+>
+  <div class="wrap">
+    <header class="page-head">
+      <span class="tag">Machines & tools</span>
+      <h1>Equipment</h1>
+      <p class="lede">
+        From soldering irons to CNC mills: where each machine stands, what you need before you may use it, and who to ask.
+      </p>
+    </header>
+
+    <section data-filter>
+      <Filters
+        placeholder="Laser cutter, Prusa, sewing…"
+        selects={[
+          { key: 'skill', label: 'Skill', all: 'Any skill', options: skillOptions },
+          { key: 'space', label: 'Makerspace', all: 'Any place', options: spaceOptions },
+          ...(trainingOptions.length ? [{ key: 'training', label: 'Before use', all: 'Any', options: trainingOptions }] : []),
+        ]}
+      />
+      <ul class="grid">
+        {
+          data.equipment.map((e) => (
+            <li
+              data-item
+              data-id={e.id}
+              data-text={[e.data.title, e.data.model, e.data.summary, data.index.spaces.get(e.data.space.id)!.data.title, ...data.pick(data.index.skills, e.data.skills).flatMap((k) => [k.data.title, ...k.data.aliases])].filter(Boolean).join(' ')}
+              data-skill={e.data.skills.map((k) => k.id).join('|')}
+              data-space={e.data.space.id}
+              data-training={e.data.training ?? ''}
+            >
+              <EquipmentCard item={e} />
+            </li>
+          ))
+        }
+      </ul>
+      <Empty what="a machine" type="equipment" />
+    </section>
+  </div>
+</Base>
+
+<script>
+  import '../../scripts/filter';
+</script>

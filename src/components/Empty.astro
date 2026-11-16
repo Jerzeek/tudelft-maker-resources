@@ -1,0 +1,10 @@
+---
+import { url } from '../lib/data';
+interface Props { what: string; type: string }
+const { what, type } = Astro.props;
+---
+
+<div class="empty" data-empty hidden>
+  <b>Nothing matches these filters.</b>
+  Know {what} that should be here? <a href={url(`/contribute/?type=${type}`)}>Add it</a> — it takes two minutes.
+</div>

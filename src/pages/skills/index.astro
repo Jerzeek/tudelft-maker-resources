@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+import SkillCard from '../../components/SkillCard.astro';
+import Filters from '../../components/Filters.astro';
+import Empty from '../../components/Empty.astro';
+import { getData } from '../../lib/data';
+
+const data = await getData();
+---
+
+<Base
+  title="Skills"
+  description="Start from what you want to learn or do, and find the places, machines and people that go with it."
+  section="skills"
+>
+  <div class="wrap">
+    <header class="page-head">
+      <span class="tag">Techniques</span>
+      <h1>Skills</h1>
+      <p class="lede">
+        Start from what you want to do. Each skill gathers the places where you can practise it, the machines involved,
+        people who can help, and projects that used it.
+      </p>
+    </header>
+
+    <section data-filter>
+      <Filters placeholder="3D printing, welding, sewing…" />
+      <ul class="grid">
+        {
+          data.skills.map((s) => (
+            <li data-item data-id={s.id} data-text={[s.data.title, s.data.summary, ...s.data.aliases].filter(Boolean).join(' ')}>
+              <SkillCard skill={s} />
+            </li>
+          ))
+        }
+      </ul>
+      <Empty what="a skill" type="skill" />
+    </section>
+  </div>
+</Base>
+
+<script>
+  import '../../scripts/filter';
+</script>

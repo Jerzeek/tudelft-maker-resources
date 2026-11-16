@@ -1,0 +1,90 @@
+# The submission robot.
+#
+# When somebody sends in one of the forms (a GitHub issue with the label
+# `submission`), this turns the answers into a page and opens a pull request,
+# so a maintainer only has to read it and press "Merge".
+#
+# To run it again for an issue: Actions → "Submission to pull request" →
+# "Run workflow" and type the issue number. Or remove and re-add the
+# `submission` label on the issue.
+name: Submission to pull request
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Number of the issue to convert
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: submission-${{ github.event.issue.number || inputs.issue }}
+  cancel-in-progress: false
+
+jobs:
+  convert:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'submission'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE: ${{ github.event.issue.number || inputs.issue }}
+      OUT: ${{ runner.temp }}/submission
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Turn the submission into a page
+        id: convert
+        run: |
+          node scripts/issue-to-content.mjs --issue "$ISSUE" --out "$OUT"
+          echo "ok=$(jq -r .ok "$OUT/result.json")" >> "$GITHUB_OUTPUT"
+
+      - name: Check that the site still builds with the new page
+        id: build
+        if: steps.convert.outputs.ok == 'true'
+        continue-on-error: true
+        run: npm run build
+
+      - name: Open a pull request
+        if: steps.convert.outputs.ok == 'true'
+        env:
+          BUILD: ${{ steps.build.outcome }}
+        run: |
+          branch="$(jq -r .branch "$OUT/result.json")"
+          title="$(jq -r .title "$OUT/result.json")"
+          if [ "$BUILD" = "success" ]; then
+            echo "✅ The site builds correctly with this page." >> "$OUT/pr-body.md"
+          else
+            echo "⚠️ The site does **not** build with this page yet. Open the failed run under the Actions tab to see why, and fix the file before merging." >> "$OUT/pr-body.md"
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add src/content
+          git commit -m "$title" -m "From the submission in #$ISSUE."
+          git push --force origin "$branch"
+
+          if [ -n "$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')" ]; then
+            gh pr edit "$branch" --title "$title" --body-file "$OUT/pr-body.md"
+          else
+            url="$(gh pr create --head "$branch" --base "${{ github.event.repository.default_branch }}" --title "$title" --body-file "$OUT/pr-body.md")"
+            printf '\n\nYou can follow it here: %s\n' "$url" >> "$OUT/comment.md"
+            gh issue comment "$ISSUE" --body-file "$OUT/comment.md"
+          fi
+
+      - name: Ask a maintainer for help
+        if: steps.convert.outputs.ok != 'true'
+        run: |
+          gh issue comment "$ISSUE" --body-file "$OUT/comment.md"
+          gh issue edit "$ISSUE" --add-label needs-attention

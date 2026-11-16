@@ -1,0 +1,30 @@
+---
+// The filter bar above an overview. See src/scripts/filter.ts for how it works.
+interface Option { value: string; label: string }
+interface Props {
+  placeholder: string;
+  selects?: { key: string; label: string; all: string; options: Option[] }[];
+}
+const { placeholder, selects = [] } = Astro.props;
+---
+
+<form class="filters" role="search">
+  <label class="grow">
+    Search
+    <input type="search" data-f="q" placeholder={placeholder} autocomplete="off" />
+  </label>
+  {
+    selects.map((s) => (
+      <label>
+        {s.label}
+        <select data-f={s.key}>
+          <option value="">{s.all}</option>
+          {s.options.map((o) => <option value={o.value}>{o.label}</option>)}
+        </select>
+      </label>
+    ))
+  }
+  <span class="count"><span data-count aria-live="polite"></span>
+    <button type="button" class="btn btn-quiet btn-sm" data-reset hidden style="margin-left:8px">Clear</button>
+  </span>
+</form>

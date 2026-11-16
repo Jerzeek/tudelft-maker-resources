@@ -1,0 +1,114 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import SpaceCard from '../components/SpaceCard.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getData, entryUrl, needsHelp, url } from '../lib/data';
+
+const data = await getData();
+const doors = [
+  { key: 'spaces', label: 'Makerspaces', n: data.spaces.length, text: 'Workshops, labs and studios, on campus and nearby.' },
+  { key: 'equipment', label: 'Equipment', n: data.equipment.length, text: 'Machines and tools, and what you need to use them.' },
+  { key: 'skills', label: 'Skills', n: data.skills.length, text: 'Start from what you want to learn or do.' },
+  { key: 'people', label: 'People', n: data.people.length, text: 'Staff and makers who are happy to help.' },
+  { key: 'projects', label: 'Projects', n: data.projects.length, text: 'Things made here, and how.' },
+];
+// Show the best-documented places first on the home page.
+const featured = [...data.spaces]
+  .sort((a, b) => Number(!!b.data.image) - Number(!!a.data.image) || (b.body ?? '').length - (a.body ?? '').length)
+  .slice(0, 6);
+const everything = [...data.spaces, ...data.equipment, ...data.skills, ...data.people, ...data.projects];
+const thin = everything.filter(needsHelp).length;
+const suggestions = data.skills.filter((s) => data.spacesForSkill(s.id).length).slice(0, 7);
+---
+
+<Base>
+  <section class="hero">
+    <div class="wrap">
+      <span class="label">Makerspaces · machines · skills · people</span>
+      <h1 style="margin-top:14px">Find a place to <mark>make</mark> things.</h1>
+      <p class="lede">
+        Every faculty at TU Delft has its own workshops, labs and experts — but no shared map. This is that map: one open
+        guide to where you can build, who can help, and what you need to get started.
+      </p>
+      <form class="bigsearch" action={url('/search/')} role="search">
+        <div class="field">
+          <label class="sr-only" for="q">Search makerspaces, machines, skills and people</label>
+          <Icon name="search" size={20} />
+          <input id="q" type="search" name="q" placeholder="Try “laser cutter” or “sewing”" autocomplete="off" />
+        </div>
+        <button class="btn btn-primary" type="submit">Search</button>
+      </form>
+      {
+        suggestions.length > 0 && (
+          <div class="try">
+            <span class="small muted">I want to do:</span>
+            {suggestions.map((s) => <a class="chip chip-skills" href={entryUrl(s)}>{s.data.title}</a>)}
+            <a class="small" href={url('/skills/')}>all skills</a>
+          </div>
+        )
+      }
+
+      <div class="doors">
+        {
+          doors.map((d) => (
+            <a class={`door t-${d.key}`} href={url(`/${d.key}/`)}>
+              <Icon name={d.key} size={24} />
+              <span class="n">{d.n}</span>
+              <b>{d.label}</b>
+              <span>{d.text}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head">
+        <div>
+          <h2>Places to start</h2>
+          <p>A few of the {data.spaces.length} places on the list.</p>
+        </div>
+        <a class="more" href={url('/spaces/')}>All makerspaces <Icon name="arrow-right" size={16} /></a>
+      </div>
+      <ul class="grid grid-lg">{featured.map((s) => <li><SpaceCard space={s} /></li>)}</ul>
+    </div>
+  </section>
+
+  {
+    data.projects.length > 0 && (
+      <section class="section" style="padding-top:0">
+        <div class="wrap">
+          <div class="head">
+            <div>
+              <h2>Made here</h2>
+              <p>See what others built, with which machines, and follow the same path.</p>
+            </div>
+            <a class="more" href={url('/projects/')}>All projects <Icon name="arrow-right" size={16} /></a>
+          </div>
+          <ul class="grid grid-lg">{data.projects.slice(0, 3).map((p) => <li><ProjectCard project={p} /></li>)}</ul>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="band">
+        <div>
+          <h2>This guide is written by the people who use it.</h2>
+          <p>
+            Know a workshop, a machine or a trick that is missing? Add it in two minutes — no account needed.
+            {thin > 0 && <> Right now {thin} pages are waiting for someone who knows more.</>}
+          </p>
+        </div>
+        <div class="btns">
+          <a class="btn btn-primary" href={url('/contribute/')}><Icon name="plus" size={16} /> Add something</a>
+          <a class="btn btn-quiet" href={url('/about/')}>About the project</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
