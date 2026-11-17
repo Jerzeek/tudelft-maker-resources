@@ -65,9 +65,9 @@ jobs:
           branch="$(jq -r .branch "$OUT/result.json")"
           title="$(jq -r .title "$OUT/result.json")"
           if [ "$BUILD" = "success" ]; then
-            echo "✅ The site builds correctly with this page." >> "$OUT/pr-body.md"
+            printf '\n✅ The site builds correctly with this page.\n' >> "$OUT/pr-body.md"
           else
-            echo "⚠️ The site does **not** build with this page yet. Open the failed run under the Actions tab to see why, and fix the file before merging." >> "$OUT/pr-body.md"
+            printf '\n⚠️ The site does **not** build with this page yet. Open the failed run under the Actions tab to see why, and fix the file before merging.\n' >> "$OUT/pr-body.md"
           fi
 
           git config user.name "github-actions[bot]"

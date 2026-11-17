@@ -9,7 +9,8 @@ For the people who review submissions and keep the site healthy. Everything here
    - Is it correct, friendly and free of private information?
    - Does it name people? Check that they agreed.
    - Work through the checklist the robot left in the description (unknown skills, a photo that needs a credit, …). You can fix things right there with the pencil icon.
-3. Check that the automatic check is green, then press **Merge pull request**. The site updates within a few minutes.
+3. Check that the automatic check is green, then press **Merge pull request**.
+   On pull requests made by the robot, GitHub first shows **Approve and run workflows**: that is a GitHub safety rule for changes made by bots. The robot has already checked that the site builds (it says so at the bottom of the description), so you can merge straight away, or press the button to run the full check once more. The site updates within a few minutes.
 4. **Open the [issues](../../issues).** Corrections (label `correction`) need a human: fix the page, then close the issue with a thank-you. Issues labelled `needs-attention` are submissions the robot could not handle; its comment says why.
 
 ## How a submission travels
