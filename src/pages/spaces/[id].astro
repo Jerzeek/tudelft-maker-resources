@@ -1,11 +1,12 @@
 ---
 import Entry from '../../layouts/Entry.astro';
 import Fact from '../../components/Fact.astro';
+import Room from '../../components/Room.astro';
 import Icon from '../../components/Icon.astro';
 import EquipmentCard from '../../components/EquipmentCard.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
 import { getData, entryUrl, url, type Space } from '../../lib/data';
-import { ACCESS, AREAS, SPACE_KINDS } from '../../forms/vocab.mjs';
+import { ACCESS } from '../../forms/vocab.mjs';
 
 export async function getStaticPaths() {
   const data = await getData();
@@ -29,7 +30,7 @@ const mapUrl =
       : null;
 ---
 
-<Entry entry={space} tag={`${SPACE_KINDS[d.kind]} · ${AREAS[d.area]}`}>
+<Entry entry={space} tokens={[d.kind, d.area, d.access && `access: ${d.access}`]}>
   <ul class="chips" slot="chips" style="margin-top:14px">
     {skills.map((s) => <li><a class="chip chip-skills chip-lg" href={entryUrl(s)}><Icon name={s.data.icon} size={15} /> {s.data.title}</a></li>)}
   </ul>
@@ -38,14 +39,14 @@ const mapUrl =
     {
       hasPlace && (
         <Fact icon="map-pin" label="Where">
-          {loc.building && <p>{loc.building}{loc.room && <>, {loc.room}</>}</p>}
-          {!loc.building && loc.room && <p>{loc.room}</p>}
+          {loc.building && <p>{loc.building}</p>}
+          {loc.room && <p><Room room={loc.room} /></p>}
           {loc.address && <p class="note">{loc.address}</p>}
           {mapUrl && <a class="small" href={mapUrl}>Show on map</a>}
         </Fact>
       )
     }
-    {d.hours && <Fact icon="clock" label="Open">{d.hours}</Fact>}
+    {d.hours && <Fact icon="clock" label="Open"><code>{d.hours}</code></Fact>}
     {
       (d.access || d.accessNotes) && (
         <Fact icon="key" label="Who can use it">

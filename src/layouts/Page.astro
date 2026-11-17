@@ -3,6 +3,7 @@
 import Base from './Base.astro';
 import Icon from '../components/Icon.astro';
 import site from '../../site.config.mjs';
+import { url } from '../lib/data';
 
 interface Props { frontmatter: { title: string; description?: string; label?: string; file: string } }
 const { frontmatter } = Astro.props;
@@ -12,7 +13,7 @@ const source = frontmatter.file.slice(frontmatter.file.indexOf('/src/pages/') + 
 <Base title={frontmatter.title} description={frontmatter.description}>
   <div class="wrap narrow">
     <header class="page-head">
-      {frontmatter.label && <span class="tag">{frontmatter.label}</span>}
+      <nav class="crumbs" aria-label="Breadcrumb"><a href={url('/')} title="Home">~</a><span aria-hidden="true">/</span><span class="here" aria-current="page">{Astro.url.pathname.replace(/\/$/, '').split('/').pop()}</span></nav>
       <h1>{frontmatter.title}</h1>
       {frontmatter.description && <p class="lede">{frontmatter.description}</p>}
     </header>

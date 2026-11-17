@@ -18,14 +18,14 @@ const by = [...data.pick(data.index.people, d.makers).map((p) => p.data.title), 
         <Image src={d.image} alt="" width={640} height={400} fit="cover" loading="lazy" />
       </div>
     ) : (
-      <div class="card-media placeholder"><Icon name="projects" size={44} /></div>
+      <div class="card-media placeholder"><span>/* no photo yet */</span></div>
     )
   }
   <div class="card-body">
-    <span class="tag">Project{d.year && ` · ${d.year}`}</span>
+    {d.year && <div class="tokens"><span class="tok">{d.year}</span></div>}
     <h3><a href={entryUrl(project)}>{d.title}</a></h3>
     {d.summary && <p class="clamp-3">{d.summary}</p>}
-    {by && <span class="meta"><Icon name="people" size={15} /> {by}</span>}
+    {by && <span class="meta"><Icon name="people" size={15} /> <span>{by}</span></span>}
     {skills.length > 0 && <ul class="chips">{skills.slice(0, 4).map((s) => <li class="chip chip-skills">{s.data.title}</li>)}</ul>}
   </div>
 </article>

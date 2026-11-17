@@ -1,0 +1,8 @@
+---
+// Shows a room like "B-2-100, 2nd floor" with the room code in code style.
+import { splitRoom } from '../lib/data';
+interface Props { room?: string }
+const [code, rest] = splitRoom(Astro.props.room);
+---
+
+{code && <code>{code}</code>}{code && rest && ', '}{rest}

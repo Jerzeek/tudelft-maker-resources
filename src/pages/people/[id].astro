@@ -23,7 +23,7 @@ const machines = data.equipmentOfPerson(person.id);
 const projects = data.projectsOfPerson(person.id);
 ---
 
-<Entry entry={person} tag={ROLES[d.role]}>
+<Entry entry={person} tokens={[d.role]}>
   <ul class="chips" slot="chips" style="margin-top:14px">
     {skills.map((s) => <li><a class="chip chip-skills chip-lg" href={entryUrl(s)}><Icon name={s.data.icon} size={15} /> {s.data.title}</a></li>)}
   </ul>
@@ -31,8 +31,8 @@ const projects = data.projectsOfPerson(person.id);
   <Fragment slot="facts">
     {
       d.image && (
-        <div style="padding:14px 0 4px">
-          <Image src={d.image} alt={d.imageAlt ?? ''} width={300} height={300} fit="cover" style="border-radius:50%;width:120px;height:120px;border:1.5px solid var(--edge)" />
+        <div class="portrait">
+          <Image src={d.image} alt={d.imageAlt ?? ''} width={300} height={300} fit="cover" />
         </div>
       )
     }

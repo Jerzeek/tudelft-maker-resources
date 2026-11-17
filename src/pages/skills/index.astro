@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import SkillCard from '../../components/SkillCard.astro';
 import Filters from '../../components/Filters.astro';
 import Empty from '../../components/Empty.astro';
-import { getData } from '../../lib/data';
+import { getData, url } from '../../lib/data';
 
 const data = await getData();
 ---
@@ -15,7 +15,7 @@ const data = await getData();
 >
   <div class="wrap">
     <header class="page-head">
-      <span class="tag">Techniques</span>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href={url('/')} title="Home">~</a><span aria-hidden="true">/</span><span class="here" aria-current="page">skills</span></nav>
       <h1>Skills</h1>
       <p class="lede">
         Start from what you want to do. Each skill gathers the places where you can practise it, the machines involved,

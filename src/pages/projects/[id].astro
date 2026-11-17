@@ -24,7 +24,7 @@ const spaces = [
 ];
 ---
 
-<Entry entry={project} tag={d.year ? `Project · ${d.year}` : 'Project'}>
+<Entry entry={project} tokens={['project', d.year]}>
   <ul class="chips" slot="chips" style="margin-top:14px">
     {skills.map((s) => <li><a class="chip chip-skills chip-lg" href={entryUrl(s)}><Icon name={s.data.icon} size={15} /> {s.data.title}</a></li>)}
   </ul>

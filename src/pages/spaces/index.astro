@@ -4,7 +4,7 @@ import SpaceCard from '../../components/SpaceCard.astro';
 import Filters from '../../components/Filters.astro';
 import Empty from '../../components/Empty.astro';
 import site from '../../../site.config.mjs';
-import { getData, entryUrl } from '../../lib/data';
+import { getData, entryUrl, url } from '../../lib/data';
 import { AREAS, SPACE_KINDS } from '../../forms/vocab.mjs';
 
 const data = await getData();
@@ -32,7 +32,7 @@ for (const s of data.spaces) {
 >
   <div class="wrap">
     <header class="page-head">
-      <span class="tag">Places</span>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href={url('/')} title="Home">~</a><span aria-hidden="true">/</span><span class="here" aria-current="page">spaces</span></nav>
       <h1>Makerspaces</h1>
       <p class="lede">
         Workshops, labs, studios and material shops — on campus and a bike or train ride away. Every faculty has its own;

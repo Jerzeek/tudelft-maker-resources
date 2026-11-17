@@ -21,7 +21,7 @@ const people = data.peopleWithSkill(skill.id);
 const projects = data.projectsWithSkill(skill.id);
 ---
 
-<Entry entry={skill}>
+<Entry entry={skill} tokens={['skill', ...skill.data.aliases.slice(0, 3)]}>
   <Fragment slot="facts">
     <Fact icon="spaces" label="Places">{spaces.length ? <a href="#places">{spaces.length} where you can do this</a> : 'None listed yet'}</Fact>
     <Fact icon="equipment" label="Machines">{machines.length ? <a href="#machines">{machines.length} listed</a> : 'None listed yet'}</Fact>

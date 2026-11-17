@@ -25,8 +25,8 @@ const suggestions = data.skills.filter((s) => data.spacesForSkill(s.id).length).
 <Base>
   <section class="hero">
     <div class="wrap">
-      <span class="label">Makerspaces · machines · skills · people</span>
-      <h1 style="margin-top:14px">Find a place to <mark>make</mark> things.</h1>
+      <span class="tag">tu-delft / open guide to making</span>
+      <h1>Find a place to <em>make</em> things.<span class="caret" aria-hidden="true"></span></h1>
       <p class="lede">
         Every faculty at TU Delft has its own workshops, labs and experts — but no shared map. This is that map: one open
         guide to where you can build, who can help, and what you need to get started.
@@ -36,13 +36,14 @@ const suggestions = data.skills.filter((s) => data.spacesForSkill(s.id).length).
           <label class="sr-only" for="q">Search makerspaces, machines, skills and people</label>
           <Icon name="search" size={20} />
           <input id="q" type="search" name="q" placeholder="Try “laser cutter” or “sewing”" autocomplete="off" />
+          <kbd aria-hidden="true">/</kbd>
         </div>
         <button class="btn btn-primary" type="submit">Search</button>
       </form>
       {
         suggestions.length > 0 && (
           <div class="try">
-            <span class="small muted">I want to do:</span>
+            <span class="label">i want to do:</span>
             {suggestions.map((s) => <a class="chip chip-skills" href={entryUrl(s)}>{s.data.title}</a>)}
             <a class="small" href={url('/skills/')}>all skills</a>
           </div>
@@ -52,8 +53,8 @@ const suggestions = data.skills.filter((s) => data.spacesForSkill(s.id).length).
       <div class="doors">
         {
           doors.map((d) => (
-            <a class={`door t-${d.key}`} href={url(`/${d.key}/`)}>
-              <Icon name={d.key} size={24} />
+            <a class="door" href={url(`/${d.key}/`)}>
+              <Icon name="arrow-up-right" size={18} class="arrow" />
               <span class="n">{d.n}</span>
               <b>{d.label}</b>
               <span>{d.text}</span>
@@ -100,8 +101,8 @@ const suggestions = data.skills.filter((s) => data.spacesForSkill(s.id).length).
         <div>
           <h2>This guide is written by the people who use it.</h2>
           <p>
-            Know a workshop, a machine or a trick that is missing? Add it in two minutes — no account needed.
-            {thin > 0 && <> Right now {thin} pages are waiting for someone who knows more.</>}
+            Know a workshop, a machine or a trick that is missing? Add it in two minutes.
+            {thin > 0 && <> Right now <code>{thin}</code> pages are waiting for someone who knows more.</>}
           </p>
         </div>
         <div class="btns">

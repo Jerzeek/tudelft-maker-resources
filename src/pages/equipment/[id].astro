@@ -1,6 +1,7 @@
 ---
 import Entry from '../../layouts/Entry.astro';
 import Fact from '../../components/Fact.astro';
+import Room from '../../components/Room.astro';
 import Icon from '../../components/Icon.astro';
 import EquipmentCard from '../../components/EquipmentCard.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
@@ -23,7 +24,7 @@ const neighbours = data.equipmentIn(space.id).filter((e) => e.id !== item.id);
 const loc = space.data.location;
 ---
 
-<Entry entry={item} tag={d.model ? `Equipment · ${d.model}` : 'Equipment'}>
+<Entry entry={item} tokens={['machine', d.model, d.quantity && d.quantity > 1 ? `×${d.quantity}` : null, d.training && `training: ${d.training}`]}>
   <ul class="chips" slot="chips" style="margin-top:14px">
     {skills.map((s) => <li><a class="chip chip-skills chip-lg" href={entryUrl(s)}><Icon name={s.data.icon} size={15} /> {s.data.title}</a></li>)}
   </ul>
@@ -31,9 +32,10 @@ const loc = space.data.location;
   <Fragment slot="facts">
     <Fact icon="map-pin" label="Where">
       <p><a href={entryUrl(space)}>{space.data.title}</a></p>
-      {(loc.building || loc.room) && <p class="note">{[loc.building, loc.room].filter(Boolean).join(', ')}</p>}
+      {loc.building && <p class="note">{loc.building}</p>}
+      {loc.room && <p class="note"><Room room={loc.room} /></p>}
     </Fact>
-    {d.quantity && <Fact icon="equipment" label="How many">{d.quantity}</Fact>}
+    {d.quantity && <Fact icon="equipment" label="How many"><code>{d.quantity}</code></Fact>}
     {
       (d.training || d.trainingNotes) && (
         <Fact icon="skills" label="Before you use it">

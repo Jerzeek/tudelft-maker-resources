@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import EquipmentCard from '../../components/EquipmentCard.astro';
 import Filters from '../../components/Filters.astro';
 import Empty from '../../components/Empty.astro';
-import { getData } from '../../lib/data';
+import { getData, url } from '../../lib/data';
 import { TRAINING } from '../../forms/vocab.mjs';
 
 const data = await getData();
@@ -21,7 +21,7 @@ const trainingOptions = Object.entries(TRAINING)
 >
   <div class="wrap">
     <header class="page-head">
-      <span class="tag">Machines & tools</span>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href={url('/')} title="Home">~</a><span aria-hidden="true">/</span><span class="here" aria-current="page">equipment</span></nav>
       <h1>Equipment</h1>
       <p class="lede">
         From soldering irons to CNC mills: where each machine stands, what you need before you may use it, and who to ask.

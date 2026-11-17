@@ -17,7 +17,7 @@ const skillOptions = data.skills.filter((s) => data.projectsWithSkill(s.id).leng
 >
   <div class="wrap">
     <header class="page-head">
-      <span class="tag">Made here</span>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href={url('/')} title="Home">~</a><span aria-hidden="true">/</span><span class="here" aria-current="page">projects</span></nav>
       <h1>Projects</h1>
       <p class="lede">
         Things people made, and how. Each project links to the machines and skills behind it, so you can follow the same

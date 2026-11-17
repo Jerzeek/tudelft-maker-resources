@@ -6,7 +6,7 @@ import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import site from '../../site.config.mjs';
 import { FORMS, templateFile } from '../forms/definitions.mjs';
-import { getData } from '../lib/data';
+import { getData, url } from '../lib/data';
 
 const data = await getData();
 const titlesOf = (source: string) => (data as any)[source].map((e: any) => e.data.title) as string[];
@@ -16,7 +16,7 @@ const repoUrl = `https://github.com/${site.repo}`;
 <Base title="Add or correct something" description="Add a makerspace, machine, project or yourself to the guide — or report a mistake. No account needed.">
   <div class="wrap narrow" style="max-width:860px">
     <header class="page-head">
-      <span class="tag">Take part</span>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href={url('/')} title="Home">~</a><span aria-hidden="true">/</span><span class="here" aria-current="page">contribute</span></nav>
       <h1>Add or correct something</h1>
       <p class="lede">
         This guide is only as good as what its users put in. If you know a place, a machine or a trick that is missing —

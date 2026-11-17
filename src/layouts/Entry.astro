@@ -7,10 +7,11 @@ import { render } from 'astro:content';
 import Base from './Base.astro';
 import Icon from '../components/Icon.astro';
 import { COLLECTIONS } from '../forms/vocab.mjs';
-import { editUrl, formatMonth, isStale, needsHelp, url, type AnyEntry } from '../lib/data';
+import { editUrl, isStale, needsHelp, sourcePath, url, type AnyEntry } from '../lib/data';
 
-interface Props { entry: AnyEntry; tag?: string }
-const { entry, tag } = Astro.props;
+/** `tokens`: short facts shown in code style under the title, e.g. ['workshop', 'campus']. */
+interface Props { entry: AnyEntry; tokens?: (string | number | undefined | null)[] }
+const { entry, tokens } = Astro.props;
 const d = entry.data;
 const section = COLLECTIONS[entry.collection];
 const { Content } = await render(entry);
@@ -19,18 +20,21 @@ const thin = needsHelp(entry);
 const report = url(`/contribute/?type=correction&name=${encodeURIComponent(d.title)}`);
 // People pages use the photo as a small portrait instead of a wide cover.
 const cover = entry.collection !== 'people' && d.image;
+const iso = (date: Date) => date.toISOString().slice(0, 10);
+const shown = (tokens ?? [section.singular.toLowerCase()]).filter((t) => t !== undefined && t !== null && t !== '');
 ---
 
 <Base title={d.title} description={d.summary} section={entry.collection} image={d.image?.src}>
   <div class="wrap">
     <header class="page-head">
       <nav class="crumbs" aria-label="Breadcrumb">
-        <a href={url('/')}>Home</a><span aria-hidden="true">/</span>
-        <a href={url(`/${section.path}/`)}>{section.plural}</a>
+        <a href={url('/')} title="Home">~</a><span aria-hidden="true">/</span>
+        <a href={url(`/${section.path}/`)} title={section.plural}>{section.path}</a><span aria-hidden="true">/</span>
+        <span class="here" aria-current="page">{entry.id}</span>
       </nav>
       <h1>{d.title}</h1>
-      <span class="tag">{tag ?? section.singular}</span>
-      {d.summary && <p class="lede" style="margin-top:12px">{d.summary}</p>}
+      {shown.length > 0 && <div class="tokens">{shown.map((t) => <span class="tok">{t}</span>)}</div>}
+      {d.summary && <p class="lede" style="margin-top:16px">{d.summary}</p>}
       <slot name="chips" />
     </header>
 
@@ -42,8 +46,8 @@ const cover = entry.collection !== 'people' && d.image;
               <Icon name="clock" size={20} />
               <div>
                 <p>
-                  <b>Last checked in {formatMonth(d.lastReviewed!)}.</b> Opening hours, rules and machines change — confirm
-                  with the staff before you go.
+                  <b>Last checked <code>{iso(d.lastReviewed!)}</code></b><br />Opening hours, rules and machines change,
+                  so confirm with the staff before you go.
                 </p>
                 <p class="small">
                   Still correct, or not any more? <a href={report}>Tell us</a> and we will update the date.
@@ -85,8 +89,8 @@ const cover = entry.collection !== 'people' && d.image;
 
         <div class="improve">
           <p class="small muted">
-            {d.lastReviewed ? <>Last checked {formatMonth(d.lastReviewed)}. </> : null}
-            Anyone can improve this page.
+            Anyone can improve this page{d.lastReviewed ? <> · last checked <code>{iso(d.lastReviewed)}</code></> : null}
+            <br /><code>{sourcePath(entry)}</code>
           </p>
           <div class="btns">
             <a class="btn btn-quiet btn-sm" href={report}><Icon name="flag" size={15} /> Report a mistake</a>

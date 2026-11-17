@@ -24,11 +24,11 @@ const sub = [d.model, showSpace ? space.data.title : null].filter(Boolean).join(
     }
   </div>
   <div class="text">
-    <h3><a href={entryUrl(item)}>{d.title}</a>{d.quantity && d.quantity > 1 && <span class="muted small"> ×{d.quantity}</span>}</h3>
+    <h3><a href={entryUrl(item)}>{d.title}</a>{d.quantity && d.quantity > 1 && <> <span class="tok">×{d.quantity}</span></>}</h3>
     {sub && <span class="sub">{sub}</span>}
     <ul class="chips">
       {skills.slice(0, 2).map((s) => <li class="chip chip-skills">{s.data.title}</li>)}
-      {d.training && d.training !== 'none' && <li class="chip chip-warn">{TRAINING[d.training]}</li>}
+      {d.training && d.training !== 'none' && <li class="chip chip-warn">{TRAINING[d.training].toLowerCase()}</li>}
     </ul>
   </div>
 </article>

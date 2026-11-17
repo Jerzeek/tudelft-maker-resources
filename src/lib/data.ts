@@ -185,6 +185,16 @@ export const isStale = (e: AnyEntry, now = new Date()) => {
   return e.data.lastReviewed < limit;
 };
 
+/**
+ * Split a room description into the room code and the rest, so the code can be
+ * shown in monospace: "B-2-100, 2nd floor" → ["B-2-100", "2nd floor"].
+ * Descriptions without a code ("Ground floor") come back as [null, text].
+ */
+export const splitRoom = (room = ''): [string | null, string] => {
+  const [first, ...rest] = room.split(/,\s*/);
+  return /\d/.test(first) && !/\s/.test(first.trim()) ? [first.trim(), rest.join(', ')] : [null, room];
+};
+
 export const formatMonth = (d: Date) =>
   d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
