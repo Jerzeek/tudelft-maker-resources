@@ -42,10 +42,14 @@
   --wrap: 1180px;
   --gutter: clamp(16px, 4vw, 32px);
 
-  /* the soft shadow that appears on hover: neutral depth plus a faint pink glow */
-  --lift: translateY(-3px);
-  --shadow: 0 1px 2px rgb(17 17 20 / 0.04), 0 14px 34px -14px rgb(17 17 20 / 0.2), 0 22px 46px -24px rgb(255 46 151 / 0.4);
-  --shadow-sm: 0 1px 2px rgb(17 17 20 / 0.05), 0 8px 20px -10px rgb(17 17 20 / 0.18), 0 12px 26px -16px rgb(255 46 151 / 0.35);
+  /* The shadow that appears on hover: soft and black, cast at 45° so it falls
+     on the bottom and the right side (light from the top-left). Hovered things
+     lift up-left, away from their shadow. Equal x and y offsets = 45°. */
+  --lift: translate(-3px, -3px);
+  --lift-sm: translate(-1px, -1px);
+  --shadow: 2px 2px 3px rgb(0 0 0 / 0.08), 8px 8px 16px -3px rgb(0 0 0 / 0.16), 16px 16px 32px -8px rgb(0 0 0 / 0.2);
+  --shadow-sm: 1px 1px 2px rgb(0 0 0 / 0.08), 5px 5px 12px -3px rgb(0 0 0 / 0.18);
+  --shadow-rest: 4px 4px 14px -6px rgb(0 0 0 / 0.14); /* for the few things that float even without hover */
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --accent: var(--pink);
@@ -203,10 +207,10 @@ kbd { padding: 0 6px; font-size: 0.72rem; color: var(--muted); box-shadow: inset
   text-decoration: none; cursor: pointer; white-space: nowrap;
   transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), background 0.15s, border-color 0.15s, color 0.15s;
 }
-.btn:hover { color: var(--ink); transform: translateY(-1px); box-shadow: var(--shadow-sm); border-color: var(--line); }
+.btn:hover { color: var(--ink); transform: var(--lift-sm); box-shadow: var(--shadow-sm); border-color: var(--line); }
 .btn:active { transform: none; box-shadow: none; }
 .btn-primary { background: var(--pink); border-color: var(--pink); color: #fff; }
-.btn-primary:hover { color: #fff; background: #ff1f8e; border-color: #ff1f8e; box-shadow: 0 10px 26px -10px rgb(255 46 151 / 0.75); }
+.btn-primary:hover { color: #fff; background: #ff1f8e; border-color: #ff1f8e; box-shadow: var(--shadow-sm); }
 .btn-dark { background: var(--ink); border-color: var(--ink); color: #fff; }
 .btn-dark:hover { color: #fff; }
 .btn-quiet { background: transparent; border-color: transparent; color: var(--ink-2); font-weight: 550; }
@@ -251,7 +255,7 @@ a.chip:hover .icon { color: var(--pink); }
 .bigsearch input {
   width: 100%; padding: 16px 52px 16px 48px; font: inherit; font-size: 1.06rem; color: var(--ink);
   background: var(--bg); border: 1px solid var(--line-2); border-radius: 14px;
-  box-shadow: 0 1px 2px rgb(17 17 20 / 0.04), 0 10px 30px -18px rgb(17 17 20 / 0.25);
+  box-shadow: var(--shadow-rest);
   transition: border-color 0.15s, box-shadow 0.2s;
 }
 .bigsearch input:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 4px var(--pink-soft), var(--shadow-sm); }
@@ -355,7 +359,7 @@ a.chip:hover .icon { color: var(--pink); }
 .help-flag {
   position: absolute; top: 12px; right: 12px; z-index: 2; pointer-events: none;
   background: var(--pink); color: #fff; border-radius: 6px;
-  font: 600 0.7rem/1 var(--font-mono); padding: 5px 8px; box-shadow: 0 6px 16px -6px rgb(255 46 151 / 0.8);
+  font: 600 0.7rem/1 var(--font-mono); padding: 5px 8px; box-shadow: 2px 2px 6px -1px rgb(0 0 0 / 0.3);
 }
 
 /* ── Filter bar ─────────────────────────────────────────────────────────── */
@@ -475,7 +479,7 @@ a.chip:hover .icon { color: var(--pink); }
 .leaflet-bar a { color: var(--ink); }
 .pin {
   width: 28px; height: 28px; border-radius: 50% 50% 50% 0; rotate: -45deg; background: var(--pink);
-  border: 2px solid #fff; box-shadow: 0 6px 14px -4px rgb(255 46 151 / 0.7), 0 1px 3px rgb(0 0 0 / 0.25);
+  border: 2px solid #fff; box-shadow: 0 4px 7px -1px rgb(0 0 0 / 0.35); /* rotated with the pin: falls bottom-right on screen */
   display: grid; place-items: center; transition: transform 0.2s var(--ease);
 }
 .pin:hover { transform: scale(1.12); }
@@ -508,7 +512,7 @@ a.chip:hover .icon { color: var(--pink); }
 .picker input:checked + .opt { border-color: var(--pink); background: var(--pink-soft); box-shadow: 0 0 0 1px var(--pink); }
 .picker input:focus-visible + .opt { outline: 2px solid var(--pink); outline-offset: 3px; }
 
-.form { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(18px, 3.4vw, 32px); box-shadow: 0 1px 2px rgb(17 17 20 / 0.03), 0 24px 50px -36px rgb(17 17 20 / 0.25); }
+.form { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(18px, 3.4vw, 32px); box-shadow: var(--shadow-rest); }
 .form h2 { margin-bottom: 22px; }
 .form .field { margin-bottom: 20px; }
 .form .field > label, .form .field > .lbl { display: block; font-weight: 650; margin-bottom: 5px; }
@@ -554,7 +558,7 @@ a.chip:hover .icon { color: var(--pink); }
 .band code { background: rgb(255 255 255 / 0.5); padding: 1px 6px; border-radius: 5px; }
 .band .btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
 .band .btn { background: #fff; border-color: #fff; color: var(--ink); }
-.band .btn:hover { box-shadow: 0 14px 30px -12px rgb(17 17 20 / 0.45); }
+.band .btn:hover { box-shadow: var(--shadow-sm); }
 .band .btn-quiet { background: transparent; border-color: rgb(17 17 20 / 0.35); }
 .band .btn-quiet:hover { background: rgb(255 255 255 / 0.25); }
 @media (max-width: 760px) { .band { grid-template-columns: 1fr; } .band .btns { justify-content: flex-start; } }
