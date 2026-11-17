@@ -34,7 +34,6 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       ISSUE: ${{ github.event.issue.number || inputs.issue }}
-      OUT: ${{ runner.temp }}/submission
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -42,6 +41,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Choose a scratch folder
+        run: echo "OUT=$RUNNER_TEMP/submission" >> "$GITHUB_ENV"
 
       - name: Turn the submission into a page
         id: convert
@@ -59,6 +60,7 @@ jobs:
         if: steps.convert.outputs.ok == 'true'
         env:
           BUILD: ${{ steps.build.outcome }}
+          BASE: ${{ github.event.repository.default_branch }}
         run: |
           branch="$(jq -r .branch "$OUT/result.json")"
           title="$(jq -r .title "$OUT/result.json")"
@@ -78,7 +80,7 @@ jobs:
           if [ -n "$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')" ]; then
             gh pr edit "$branch" --title "$title" --body-file "$OUT/pr-body.md"
           else
-            url="$(gh pr create --head "$branch" --base "${{ github.event.repository.default_branch }}" --title "$title" --body-file "$OUT/pr-body.md")"
+            url="$(gh pr create --head "$branch" --base "$BASE" --title "$title" --body-file "$OUT/pr-body.md")"
             printf '\n\nYou can follow it here: %s\n' "$url" >> "$OUT/comment.md"
             gh issue comment "$ISSUE" --body-file "$OUT/comment.md"
           fi
